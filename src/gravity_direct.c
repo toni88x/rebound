@@ -333,16 +333,16 @@ void gravity_calculate_variational_acceleration(void){
 		//if (_gravity_ignore_10 && ((i==1 && j==0) || (j==1 && i==0)) ) continue;
 		int id = 0;
 		for (int l=0; l<N_megnopp; l++){
-		for (int k=0; k<=l k++){
-			const int _N_shift = _N_real*(N_megnopp+1) + _Nreal*id;
+		for (int k=0; k<=l; k++){
+			const int _N_shift = _N_real*(N_megnopp+1) + _N_real*id;
 			const double dx = particles[i].x - particles[j].x;
 			const double dy = particles[i].y - particles[j].y;
 			const double dz = particles[i].z - particles[j].z;
 			const double r2 = dx*dx + dy*dy + dz*dz + softening*softening;
 			const double r  = sqrt(r2);
 			const double r3inv = 1./(r2*r);
-			const double r5inv = 3.*r3inv/r2;
-			const double r7inv = 3.*r5inv/r2;
+			const double r5inv = r3inv/r2;
+			const double r7inv = r5inv/r2;
 			const double ddx = particles[i+_N_shift].x - particles[j+_N_shift].x;
 			const double ddy = particles[i+_N_shift].y - particles[j+_N_shift].y;
 			const double ddz = particles[i+_N_shift].z - particles[j+_N_shift].z;
@@ -350,16 +350,44 @@ void gravity_calculate_variational_acceleration(void){
 			const double Gmj = G * particles[j+_N_shift].m;
 			
 			// Variational equations
-			const double dax =   ddx * ( dx*dx*r5inv - r3inv )
-					   + ddy * ( dx*dy*r5inv )
-					   + ddz * ( dx*dz*r5inv );
-			const double day =   ddx * ( dy*dx*r5inv )
-					   + ddy * ( dy*dy*r5inv - r3inv )
-					   + ddz * ( dy*dz*r5inv );
-			const double daz =   ddx * ( dz*dx*r5inv )
-					   + ddy * ( dz*dy*r5inv )
-					   + ddz * ( dz*dz*r5inv - r3inv );
+			double dax =   ddx * ( 3.*dx*dx*r5inv - r3inv )
+					   + ddy * ( 3.*dx*dy*r5inv )
+					   + ddz * ( 3.*dx*dz*r5inv );
+			double day =   ddx * ( 3.*dy*dx*r5inv )
+					   + ddy * ( 3.*dy*dy*r5inv - r3inv )
+					   + ddz * ( 3.*dy*dz*r5inv );
+			double daz =   ddx * ( 3.*dz*dx*r5inv )
+					   + ddy * ( 3.*dz*dy*r5inv )
+					   + ddz * ( 3.*dz*dz*r5inv - r3inv );
 			
+			// delta^(1) delta^(1) terms
+			{
+			const int _N_shift_k1 = _N_real*(l+1);
+			const int _N_shift_k2 = _N_real*(k+1);
+			const double dk1dx = particles[i+_N_shift_k1].x - particles[j+_N_shift_k1].x;
+			const double dk1dy = particles[i+_N_shift_k1].y - particles[j+_N_shift_k1].y;
+			const double dk1dz = particles[i+_N_shift_k1].z - particles[j+_N_shift_k1].z;
+			const double dk2dx = particles[i+_N_shift_k2].x - particles[j+_N_shift_k2].x;
+			const double dk2dy = particles[i+_N_shift_k2].y - particles[j+_N_shift_k2].y;
+			const double dk2dz = particles[i+_N_shift_k2].z - particles[j+_N_shift_k2].z;
+
+			const double rdk1 =  dx*dk1dx + dy*dk1dy + dz*dk1dz;
+			const double rdk2 =  dx*dk2dx + dy*dk2dy + dz*dk2dz;
+			const double dk1dk2 =  dk1dx*dk2dx + dk1dy*dk2dy + dk1dz*dk2dz;
+			dax 	+=        r5inv * dk2dx * rdk1
+					+ r5inv * dk1dx * rdk2
+					+ r5inv    * dx * dk1dk2  
+				        - 15.      * dx * r7inv * rdk1 * rdk2;
+			day 	+=        r5inv * dk2dy * rdk1
+					+ r5inv * dk1dy * rdk2
+					+ r5inv    * dy * dk1dk2  
+				        - 15.      * dy * r7inv * rdk1 * rdk2;
+			daz 	+=        r5inv * dk2dz * rdk1
+					+ r5inv * dk1dz * rdk2
+					+ r5inv    * dz * dk1dk2  
+				        - 15.      * dz * r7inv * rdk1 * rdk2;
+			
+			}
 			particles[i+_N_shift].ax += Gmj * dax;
 			particles[i+_N_shift].ay += Gmj * day;
 			particles[i+_N_shift].az += Gmj * daz;
