@@ -75,10 +75,10 @@ double tools_rayleigh(double sigma){
 double tools_energy(void){
 	double e_kin = 0.;
 	double e_pot = 0.;
-	for (int i=0;i<N-N_megno;i++){
+	for (int i=0;i<N-N_megno-N_megno2;i++){
 		struct particle pi = particles[i];
 		e_kin += 0.5 * pi.m * (pi.vx*pi.vx + pi.vy*pi.vy + pi.vz*pi.vz);
-		for (int j=i+1;j<N-N_megno;j++){
+		for (int j=i+1;j<N-N_megno-N_megno2;j++){
 			struct particle pj = particles[j];
 			double dx = pi.x - pj.x;
 			double dy = pi.y - pj.y;
@@ -301,7 +301,7 @@ double tools_megno_mean_Y; 	// mean of Y
 double tools_megno_delta0; 	// initial scale of delta (for one particle)
 long   tools_megno_n; 		// number of covariance updates
 void tools_megno_init(double delta){
-	int _N_megno = N;
+	int _N = N;
 	tools_megno_Ys = 0.;
 	tools_megno_Yss = 0.;
 	tools_megno_cov_Yt = 0.;
@@ -311,7 +311,7 @@ void tools_megno_init(double delta){
 	tools_megno_mean_t = 0;
 	tools_megno_delta0 = delta;
 	for (int k=0; k<N_megnopp; k++){
-		for (int i=0;i<_N_megno;i++){ 
+		for (int i=0;i<_N;i++){ 
 			struct particle megno = {
 				.m  = particles[i].m,
 				.x  = tools_normal(1.),
@@ -331,7 +331,32 @@ void tools_megno_init(double delta){
 			particles_add(megno);
 		}
 	}
-	N_megno = _N_megno*N_megnopp;
+	for (int l=0; l<N_megnopp; l++){
+		for (int k=0; k<=l; k++){
+			// TODO Need to make them agree with first order variations
+			for (int i=0;i<_N;i++){ 
+				struct particle megno = {
+					.m  = particles[i].m,
+					.x  = tools_normal(1.),
+					.y  = tools_normal(1.),
+					.z  = tools_normal(1.),
+					.vx = tools_normal(1.),
+					.vy = tools_normal(1.),
+					.vz = tools_normal(1.) };
+				double deltad = delta/sqrt(megno.x*megno.x + megno.y*megno.y + megno.z*megno.z + megno.vx*megno.vx + megno.vy*megno.vy + megno.vz*megno.vz); // rescale
+				megno.x *= deltad;
+				megno.y *= deltad;
+				megno.z *= deltad;
+				megno.vx *= deltad;
+				megno.vy *= deltad;
+				megno.vz *= deltad;
+
+				particles_add(megno);
+			}
+		}
+	}
+	N_megno = _N*N_megnopp;
+	N_megno2 = _N*(N_megnopp+1)*(N_megnopp)/2;
 }
 double tools_megno(void){ // Returns the MEGNO <Y>
 	if (t==0.) return 0.;
@@ -344,7 +369,7 @@ double tools_lyapunov(void){ // Returns the largest Lyapunov characteristic numb
 double tools_megno_deltad_delta(void){
         double deltad = 0;
         double delta2 = 0;
-	const int _N_real   = N - N_megno;
+	const int _N_real   = N - N_megno - N_megno2;
         for (int i=_N_real;i<_N_real*2;i++){
                 deltad += particles[i].vx * particles[i].x; 
                 deltad += particles[i].vy * particles[i].y; 

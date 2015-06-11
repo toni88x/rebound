@@ -43,6 +43,7 @@ int N 		= 0;
 int Nmax	= 0;	
 int N_active 	= -1; 	
 int N_megno 	= 0; 	
+int N_megno2 	= 0; 	
 int N_megnopp 	= 1; 	
 
 #ifdef BOUNDARIES_OPEN
@@ -141,6 +142,7 @@ void particles_remove_all(void){
 	Nmax 		= 0;
 	N_active 	= -1;
 	N_megno 	= 0;
+	N_megno2 	= 0;
 	free(particles);
 	particles 	= NULL;
 }
