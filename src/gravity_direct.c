@@ -179,7 +179,7 @@ static int N_cs = 0;
 
 void gravity_calculate_acceleration(void){
 	const unsigned int _gravity_ignore_10 = gravity_ignore_10;
-	const int _N_real   = N - N_megno;
+	const int _N_real   = N - N_megno - N_megno2;
 	if (N_cs<_N_real){
 		cs = realloc(cs,_N_real*sizeof(struct cs_3d));
 		N_cs = _N_real;
@@ -193,7 +193,7 @@ void gravity_calculate_acceleration(void){
 		cs[i].y = 0.;
 		cs[i].z = 0.;
 	}
-	const int _N_active = ((N_active==-1)?N:N_active)- N_megno;
+	const int _N_active = ((N_active==-1)?N:N_active)- N_megno - N_megno2;
 	const int _N_start  = (integrator==WH?1:0);
 	// Summing over all massive particle pairs
 #pragma omp parallel for schedule(guided)
