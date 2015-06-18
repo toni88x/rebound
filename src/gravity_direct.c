@@ -374,17 +374,17 @@ void gravity_calculate_variational_acceleration(void){
 			const double rdk1 =  dx*dk1dx + dy*dk1dy + dz*dk1dz;
 			const double rdk2 =  dx*dk2dx + dy*dk2dy + dz*dk2dz;
 			const double dk1dk2 =  dk1dx*dk2dx + dk1dy*dk2dy + dk1dz*dk2dz;
-			dax 	+=        r5inv * dk2dx * rdk1
-					+ r5inv * dk1dx * rdk2
-					+ r5inv    * dx * dk1dk2  
+			dax 	+=        3.* r5inv * dk2dx * rdk1
+					+ 3.* r5inv * dk1dx * rdk2
+					+ 3.* r5inv    * dx * dk1dk2  
 				        - 15.      * dx * r7inv * rdk1 * rdk2;
-			day 	+=        r5inv * dk2dy * rdk1
-					+ r5inv * dk1dy * rdk2
-					+ r5inv    * dy * dk1dk2  
+			day 	+=        3.* r5inv * dk2dy * rdk1
+					+ 3.* r5inv * dk1dy * rdk2
+					+ 3.* r5inv    * dy * dk1dk2  
 				        - 15.      * dy * r7inv * rdk1 * rdk2;
-			daz 	+=        r5inv * dk2dz * rdk1
-					+ r5inv * dk1dz * rdk2
-					+ r5inv    * dz * dk1dk2  
+			daz 	+=        3.* r5inv * dk2dz * rdk1
+					+ 3.* r5inv * dk1dz * rdk2
+					+ 3.* r5inv    * dz * dk1dk2  
 				        - 15.      * dz * r7inv * rdk1 * rdk2;
 			
 			}
