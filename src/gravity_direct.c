@@ -350,13 +350,13 @@ void gravity_calculate_variational_acceleration(void){
 			const double Gmj = G * particles[j+_N_shift].m;
 			
 			// Variational equations
-			double dax =   ddx * ( 3.*dx*dx*r5inv - r3inv )
+			double dax =         ddx * ( 3.*dx*dx*r5inv - r3inv )
 					   + ddy * ( 3.*dx*dy*r5inv )
 					   + ddz * ( 3.*dx*dz*r5inv );
-			double day =   ddx * ( 3.*dy*dx*r5inv )
+			double day =         ddx * ( 3.*dy*dx*r5inv )
 					   + ddy * ( 3.*dy*dy*r5inv - r3inv )
 					   + ddz * ( 3.*dy*dz*r5inv );
-			double daz =   ddx * ( 3.*dz*dx*r5inv )
+			double daz =         ddx * ( 3.*dz*dx*r5inv )
 					   + ddy * ( 3.*dz*dy*r5inv )
 					   + ddz * ( 3.*dz*dz*r5inv - r3inv );
 			
