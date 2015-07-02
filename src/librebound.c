@@ -202,6 +202,8 @@ void reset(void){
 	Nmax 		= 0;
 	N_active 	= -1;
 	N_megno 	= 0;
+	N_megno2 	= 0;
+	N_megnopp 	= 0;
 	iter		= 0;
 	timing		= 0.;
 	free(particles);
