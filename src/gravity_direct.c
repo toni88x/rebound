@@ -316,7 +316,7 @@ void gravity_calculate_variational_acceleration(void){
 					   + ddy * ( dz*dy*r5inv )
 					   + ddz * ( dz*dz*r5inv - r3inv );
 
-			// Variational mass contirbutions
+			// Variational mass contributions
 			const double dGmi = G*particles[i+_N_shift].m;
 			const double dGmj = G*particles[j+_N_shift].m;
 			

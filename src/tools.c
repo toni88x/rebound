@@ -313,7 +313,7 @@ void tools_megno_init(double delta){
 	for (int k=0; k<N_megnopp; k++){
 		for (int i=0;i<_N;i++){ 
 			struct particle megno = {
-				.m  = particles[i].m,
+				.m  = 0.,
 				.x  = tools_normal(1.),
 				.y  = tools_normal(1.),
 				.z  = tools_normal(1.),
@@ -336,7 +336,7 @@ void tools_megno_init(double delta){
 			// TODO Need to make them agree with first order variations
 			for (int i=0;i<_N;i++){ 
 				struct particle megno = {
-					.m  = particles[i].m,
+					.m  = 0.,
 					.x  = tools_normal(1.),
 					.y  = tools_normal(1.),
 					.z  = tools_normal(1.),
