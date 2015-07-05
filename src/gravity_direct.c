@@ -324,9 +324,9 @@ void gravity_calculate_variational_acceleration(void){
 			particles[i+_N_shift].ay += Gmj * day - dGmj*r3inv*dy;
 			particles[i+_N_shift].az += Gmj * daz - dGmj*r3inv*dz;
 			
-			particles[j+_N_shift].ax -= Gmi * dax + dGmi*r3inv*dx;
-			particles[j+_N_shift].ay -= Gmi * day + dGmi*r3inv*dy;
-			particles[j+_N_shift].az -= Gmi * daz + dGmi*r3inv*dz;
+			particles[j+_N_shift].ax -= Gmi * dax - dGmi*r3inv*dx;
+			particles[j+_N_shift].ay -= Gmi * day - dGmi*r3inv*dy;
+			particles[j+_N_shift].az -= Gmi * daz - dGmi*r3inv*dz;
 		}
 	}
 	}
@@ -413,17 +413,17 @@ void gravity_calculate_variational_acceleration(void){
 				- dk1Gmj*r3inv*dk2dz + 3.*dk1Gmj*r5inv*dz*rdk2;
 			                                                     
 			particles[j+_N_shift].ax -= Gmi * dax 
-				+ ddGmi*r3inv*dx
-				+ dk2Gmi*r3inv*dk1dx - 3.*dk2Gmi*r5inv*dx*rdk1
-				+ dk1Gmi*r3inv*dk2dx - 3.*dk1Gmi*r5inv*dx*rdk2;
+				- ddGmi*r3inv*dx
+				- dk2Gmi*r3inv*dk1dx + 3.*dk2Gmi*r5inv*dx*rdk1
+				- dk1Gmi*r3inv*dk2dx + 3.*dk1Gmi*r5inv*dx*rdk2;
 			particles[j+_N_shift].ay -= Gmi * day 
-				+ ddGmi*r3inv*dy
-				+ dk2Gmi*r3inv*dk1dy - 3.*dk2Gmi*r5inv*dy*rdk1
-				+ dk1Gmi*r3inv*dk2dy - 3.*dk1Gmi*r5inv*dy*rdk2;
+				- ddGmi*r3inv*dy
+				- dk2Gmi*r3inv*dk1dy + 3.*dk2Gmi*r5inv*dy*rdk1
+				- dk1Gmi*r3inv*dk2dy + 3.*dk1Gmi*r5inv*dy*rdk2;
 			particles[j+_N_shift].az -= Gmi * daz 
-				+ ddGmi*r3inv*dz
-				+ dk2Gmi*r3inv*dk1dz - 3.*dk2Gmi*r5inv*dz*rdk1
-				+ dk1Gmi*r3inv*dk2dz - 3.*dk1Gmi*r5inv*dz*rdk2;
+				- ddGmi*r3inv*dz
+				- dk2Gmi*r3inv*dk1dz + 3.*dk2Gmi*r5inv*dz*rdk1
+				- dk1Gmi*r3inv*dk2dz + 3.*dk1Gmi*r5inv*dz*rdk2;
 			id++;
 		}
 		}
