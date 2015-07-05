@@ -123,6 +123,45 @@ void tools_move_to_center_of_momentum(void){
 	}
 }
 
+void tools_move_var_to_center_of_momentum(int var){
+	// Assumes real particles already at COM
+	double m = 0;
+	double x = 0;
+	double y = 0;
+	double z = 0;
+	double vx = 0;
+	double vy = 0;
+	double vz = 0;
+	const int _N_real = N - N_megno - N_megno2;
+	const int _N_shift = var*_N_real;
+	for (int i=0;i<_N_real;i++){
+		struct particle p = particles[i];
+		struct particle dp = particles[i+_N_shift];
+		m  += p.m+dp.m;
+		x   += dp.x*p.m  + p.x*dp.m  + dp.x*dp.m;
+		y   += dp.y*p.m  + p.y*dp.m  + dp.y*dp.m;
+		z   += dp.z*p.m  + p.z*dp.m  + dp.z*dp.m;
+		vx  += dp.vx*p.m + p.vx*dp.m + dp.vx*dp.m;
+		vy  += dp.vy*p.m + p.vy*dp.m + dp.vy*dp.m;
+		vz  += dp.vz*p.m + p.vz*dp.m + dp.vz*dp.m;
+	}
+	x /= m;
+	y /= m;
+	z /= m;
+	vx /= m;
+	vy /= m;
+	vz /= m;
+	for (int i=_N_shift;i<_N_shift+_N_real;i++){
+		particles[i].x  -= x;
+		particles[i].y  -= y;
+		particles[i].z  -= z;
+		particles[i].vx -= vx;
+		particles[i].vy -= vy;
+		particles[i].vz -= vz;
+	}
+}
+
+
 struct particle tools_get_center_of_mass(struct particle p1, struct particle p2){
 	p1.x   = p1.x*p1.m + p2.x*p2.m;		
 	p1.y   = p1.y*p1.m + p2.y*p2.m;
