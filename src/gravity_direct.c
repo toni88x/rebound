@@ -285,6 +285,7 @@ void gravity_calculate_variational_acceleration(void){
 		particles[i].ay = 0; 
 		particles[i].az = 0; 
 	}
+	// 1st order
 #pragma omp parallel for schedule(guided)
 	for (int i=0; i<_N_real; i++){
 	for (int j=i+1; j<_N_real; j++){
@@ -301,8 +302,8 @@ void gravity_calculate_variational_acceleration(void){
 			const double ddx = particles[i+_N_shift].x - particles[j+_N_shift].x;
 			const double ddy = particles[i+_N_shift].y - particles[j+_N_shift].y;
 			const double ddz = particles[i+_N_shift].z - particles[j+_N_shift].z;
-			const double Gmi = G * particles[i+_N_shift].m;
-			const double Gmj = G * particles[j+_N_shift].m;
+			const double Gmi = G * particles[i].m;
+			const double Gmj = G * particles[j].m;
 			
 			// Variational equations
 			const double dax =   ddx * ( dx*dx*r5inv - r3inv )
@@ -314,14 +315,18 @@ void gravity_calculate_variational_acceleration(void){
 			const double daz =   ddx * ( dz*dx*r5inv )
 					   + ddy * ( dz*dy*r5inv )
 					   + ddz * ( dz*dz*r5inv - r3inv );
+
+			// Variational mass contirbutions
+			const double dGmi = G*particles[i+_N_shift].m;
+			const double dGmj = G*particles[j+_N_shift].m;
 			
-			particles[i+_N_shift].ax += Gmj * dax;
-			particles[i+_N_shift].ay += Gmj * day;
-			particles[i+_N_shift].az += Gmj * daz;
+			particles[i+_N_shift].ax += Gmj * dax - dGmj*r3inv*dx;
+			particles[i+_N_shift].ay += Gmj * day - dGmj*r3inv*dy;
+			particles[i+_N_shift].az += Gmj * daz - dGmj*r3inv*dz;
 			
-			particles[j+_N_shift].ax -= Gmi * dax;
-			particles[j+_N_shift].ay -= Gmi * day;
-			particles[j+_N_shift].az -= Gmi * daz;
+			particles[j+_N_shift].ax -= Gmi * dax + dGmi*r3inv*dx;
+			particles[j+_N_shift].ay -= Gmi * day + dGmi*r3inv*dy;
+			particles[j+_N_shift].az -= Gmi * daz + dGmi*r3inv*dz;
 		}
 	}
 	}
@@ -346,10 +351,13 @@ void gravity_calculate_variational_acceleration(void){
 			const double ddx = particles[i+_N_shift].x - particles[j+_N_shift].x;
 			const double ddy = particles[i+_N_shift].y - particles[j+_N_shift].y;
 			const double ddz = particles[i+_N_shift].z - particles[j+_N_shift].z;
-			const double Gmi = G * particles[i+_N_shift].m;
-			const double Gmj = G * particles[j+_N_shift].m;
+			const double Gmi = G * particles[i].m;
+			const double Gmj = G * particles[j].m;
+			const double ddGmi = G*particles[i+_N_shift].m;
+			const double ddGmj = G*particles[j+_N_shift].m;
 			
 			// Variational equations
+			// delta^(2) terms
 			double dax =         ddx * ( 3.*dx*dx*r5inv - r3inv )
 					   + ddy * ( 3.*dx*dy*r5inv )
 					   + ddz * ( 3.*dx*dz*r5inv );
@@ -361,7 +369,6 @@ void gravity_calculate_variational_acceleration(void){
 					   + ddz * ( 3.*dz*dz*r5inv - r3inv );
 			
 			// delta^(1) delta^(1) terms
-			{
 			const int _N_shift_k1 = _N_real*(l+1);
 			const int _N_shift_k2 = _N_real*(k+1);
 			const double dk1dx = particles[i+_N_shift_k1].x - particles[j+_N_shift_k1].x;
@@ -387,14 +394,36 @@ void gravity_calculate_variational_acceleration(void){
 					+ 3.* r5inv    * dz * dk1dk2  
 				        - 15.      * dz * r7inv * rdk1 * rdk2;
 			
-			}
-			particles[i+_N_shift].ax += Gmj * dax;
-			particles[i+_N_shift].ay += Gmj * day;
-			particles[i+_N_shift].az += Gmj * daz;
-			
-			particles[j+_N_shift].ax -= Gmi * dax;
-			particles[j+_N_shift].ay -= Gmi * day;
-			particles[j+_N_shift].az -= Gmi * daz;
+			const double dk1Gmi = G * particles[i+_N_shift_k1].m;
+			const double dk1Gmj = G * particles[j+_N_shift_k1].m;
+			const double dk2Gmi = G * particles[i+_N_shift_k2].m;
+			const double dk2Gmj = G * particles[j+_N_shift_k2].m;
+
+			particles[i+_N_shift].ax += Gmj * dax 
+				- ddGmj*r3inv*dx 
+				- dk2Gmj*r3inv*dk1dx + 3.*dk2Gmj*r5inv*dx*rdk1
+				- dk1Gmj*r3inv*dk2dx + 3.*dk1Gmj*r5inv*dx*rdk2;
+			particles[i+_N_shift].ay += Gmj * day 
+				- ddGmj*r3inv*dy
+				- dk2Gmj*r3inv*dk1dy + 3.*dk2Gmj*r5inv*dy*rdk1
+				- dk1Gmj*r3inv*dk2dy + 3.*dk1Gmj*r5inv*dy*rdk2;
+			particles[i+_N_shift].az += Gmj * daz 
+				- ddGmj*r3inv*dz
+				- dk2Gmj*r3inv*dk1dz + 3.*dk2Gmj*r5inv*dz*rdk1
+				- dk1Gmj*r3inv*dk2dz + 3.*dk1Gmj*r5inv*dz*rdk2;
+			                                                     
+			particles[j+_N_shift].ax -= Gmi * dax 
+				+ ddGmi*r3inv*dx
+				+ dk2Gmi*r3inv*dk1dx - 3.*dk2Gmi*r5inv*dx*rdk1
+				+ dk1Gmi*r3inv*dk2dx - 3.*dk1Gmi*r5inv*dx*rdk2;
+			particles[j+_N_shift].ay -= Gmi * day 
+				+ ddGmi*r3inv*dy
+				+ dk2Gmi*r3inv*dk1dy - 3.*dk2Gmi*r5inv*dy*rdk1
+				+ dk1Gmi*r3inv*dk2dy - 3.*dk1Gmi*r5inv*dy*rdk2;
+			particles[j+_N_shift].az -= Gmi * daz 
+				+ ddGmi*r3inv*dz
+				+ dk2Gmi*r3inv*dk1dz - 3.*dk2Gmi*r5inv*dz*rdk1
+				+ dk1Gmi*r3inv*dk2dz - 3.*dk1Gmi*r5inv*dz*rdk2;
 			id++;
 		}
 		}
