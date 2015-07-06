@@ -204,6 +204,18 @@ class ReboundModule(types.ModuleType):
     def N_megno(self):
         return c_int.in_dll(self.clibrebound,"N_megno").value 
     
+    @N_megno.setter
+    def N_megno(self, value):
+        c_int.in_dll(self.clibrebound,"N_megno").value = value
+    
+    @property
+    def N_megno2(self):
+        return c_int.in_dll(self.clibrebound,"N_megno2").value 
+    
+    @N_megno2.setter
+    def N_megno2(self, value):
+        c_int.in_dll(self.clibrebound,"N_megno2").value = value
+    
     @property
     def N_megnopp(self):
         return c_int.in_dll(self.clibrebound,"N_megnopp").value 
