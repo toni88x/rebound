@@ -7,23 +7,27 @@ rename = re.compile("([^_]*)_([0-9]*)")
 class Simulation:
     N = 0
     N_param = 0
-    thetanames = []
+    theta_names = []
     theta = []
-    def __init__(self, theta, thetanames):
+    def __init__(self, theta, theta_names):
         self.theta = theta
-        self.thetanames = thetanames
-        N_param = len(theta)
+        self.theta_names = theta_names
+        self.N_param = len(theta)
+        for i, name_full in enumerate(self.theta_names): # Find number of planets
+            name, planetid = rename.match(name_full).groups()
+            self.N = max(int(planetid)+1, self.N)
 
-    def getPlanets(thetap=None):
+
+    def getPlanets(self, thetap=None):
         if thetap is None:
             thetap = self.theta
         # Defaults
-        a = np.full(N,1.)
-        anom = np.full(N,0.)
-        m = np.full(N,1e-3)
-        h = np.full(N,0.0)
-        k = np.full(N,0.0)
-        for i, name_full in enumerate(theta_names):
+        a = np.full(self.N,1.)
+        anom = np.full(self.N,0.)
+        m = np.full(self.N,1e-3)
+        h = np.full(self.N,0.0)
+        k = np.full(self.N,0.0)
+        for i, name_full in enumerate(self.theta_names):
             name, planetid = rename.match(name_full).groups()
             planetid = int(planetid) 
             if name == "a":
@@ -39,7 +43,7 @@ class Simulation:
 
         star = r.Particle(m=1.)
         planets = [star]
-        for planetid in range(1,N):
+        for planetid in range(1,self.N):
             planets.append(r.Particle(primary=star,
                                       m = m[planetid],
                                       a = a[planetid],
@@ -49,9 +53,7 @@ class Simulation:
                           )
         return planets
 
-    def getRV(times=None):
-        if times is None:
-            times = data_t
+    def getRV(self, times):
         r.reset()
         r.add(self.getPlanets())
         r.move_to_com()
@@ -62,9 +64,17 @@ class Simulation:
             rvs[i] = ps[0].vx*CU2MS
         return rvs
 
-    def run(derivatives=True):
+
+    def varid2(self, l,k):
+        var = l*(l+1)/2+k
+        return var+1+self.N_param
+
+    def varid1(self, l):
+        return 1*l+1
+
+    def getLogP(self, obs, derivatives=True):
         r.reset()
-        r.add(getPlanets())
+        r.add(self.getPlanets())
         r.move_to_com()
         
         if derivatives:
@@ -73,11 +83,11 @@ class Simulation:
             for l in range(self.N_param):
                 thetas2 = self.theta.copy()
                 thetas2[l] += delta/2.
-                mp = getPlanets(thetas2)
+                mp = self.getPlanets(thetas2)
                 thetas2[l] -= delta
-                mm = getPlanets(thetas2)
+                mm = self.getPlanets(thetas2)
 
-                for i in range(N):
+                for i in range(self.N):
                     mp[i].m  -= mm[i].m  
                     mp[i].x  -= mm[i].x  
                     mp[i].y  -= mm[i].y  
@@ -87,7 +97,7 @@ class Simulation:
                     mp[i].vz -= mm[i].vz 
 
                 r.add(mp)
-                r.move_var_to_com(N,varid1(l))
+                r.move_var_to_com(self.N,self.varid1(l))
 
             # Second order
             for l in range(self.N_param):
@@ -95,15 +105,15 @@ class Simulation:
                     thetas2 = self.theta.copy()
                     thetas2[l] += delta/2.
                     thetas2[k] += delta/2.
-                    mpp = getPlanets(thetas2)
+                    mpp = self.getPlanets(thetas2)
                     thetas2[k] -= delta
-                    mpm = getPlanets(thetas2)
+                    mpm = self.getPlanets(thetas2)
                     thetas2[l] -= delta
-                    mmm = getPlanets(thetas2)
+                    mmm = self.getPlanets(thetas2)
                     thetas2[k] += delta
-                    mmp = getPlanets(thetas2)
+                    mmp = self.getPlanets(thetas2)
 
-                    for i in range(N):
+                    for i in range(self.N):
                         mpp[i].m  += - mpm[i].m  - mmp[i].m  + mmm[i].m
                         mpp[i].x  += - mpm[i].x  - mmp[i].x  + mmm[i].x
                         mpp[i].y  += - mpm[i].y  - mmp[i].y  + mmm[i].y 
@@ -113,10 +123,10 @@ class Simulation:
                         mpp[i].vz += - mpm[i].vz - mmp[i].vz + mmm[i].vz
 
                     r.add(mpp)
-                    r.move_var_to_com(N,varid2(l,k))
+                    r.move_var_to_com(self.N,self.varid2(l,k))
             r.N_megnopp = self.N_param 
-            r.N_megno   = N*self.N_param
-            r.N_megno2  = N*(self.N_param+1)*(self.N_param)/2
+            r.N_megno   = self.N*self.N_param
+            r.N_megno2  = self.N*(self.N_param+1)*(self.N_param)/2
         
         ps = r.particles
 
@@ -126,21 +136,21 @@ class Simulation:
         if derivatives:
             logp_d  = np.zeros(self.N_param)
             logp_d2 = np.zeros((self.N_param*(self.N_param+1)/2,2))
-        for i,t in enumerate(data_t):
+        for i,t in enumerate(obs.t):
             r.integrate(t)
-            dv     = ps[0].vx*CU2MS-data_rv[i]
-            derri  = 1./(2.*(data_err[i]**2))
+            dv     = ps[0].vx*CU2MS-obs.rv[i]
+            derri  = 1./(2.*(obs.err[i]**2))
             logps += -dv**2*derri
             if derivatives:
                 for k in range(self.N_param):
-                    vari1 = varid1(k)*N
+                    vari1 = self.varid1(k)*self.N
                     logp_d[k] += -2.*ps[vari1].vx*CU2MS/delta * dv*derri
                 _id = 0
                 for l in range(self.N_param):
                     for k in range(l+1):
-                        vari2  = varid2(l,k)*N
-                        vari1l = varid1(l)*N
-                        vari1k = varid1(k)*N
+                        vari2  = self.varid2(l,k)*self.N
+                        vari1l = self.varid1(l)*self.N
+                        vari1k = self.varid1(k)*self.N
                         logp_d2[_id][0] += -2.*(ps[vari1l].vx*CU2MS * ps[vari1k].vx*CU2MS)/(delta*delta)*derri
                         # Expectation value would remove next line, still a valid metric, but less useful
                         logp_d2[_id][1] += -2.*(ps[vari2].vx*CU2MS * dv)/(delta*delta)*derri
