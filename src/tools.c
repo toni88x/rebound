@@ -123,7 +123,7 @@ void tools_move_to_center_of_momentum(void){
 	}
 }
 
-void tools_move_var_to_center_of_momentum(int var){
+void tools_move_var_to_center_of_momentum(int _N_real, int var){
 	// Assumes real particles already at COM
 	double m = 0;
 	double x = 0;
@@ -132,7 +132,6 @@ void tools_move_var_to_center_of_momentum(int var){
 	double vx = 0;
 	double vy = 0;
 	double vz = 0;
-	const int _N_real = N - N_megno - N_megno2;
 	const int _N_shift = var*_N_real;
 	for (int i=0;i<_N_real;i++){
 		struct particle p = particles[i];
