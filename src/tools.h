@@ -125,8 +125,9 @@ struct particle tools_get_center_of_mass(struct particle p1, struct particle p2)
 
 /**
  * Moves the set of variational equations with the index var to the center of mass frame.
+ * Needs number of real particles as _N_real
  */
-void tools_move_var_to_center_of_momentum(int var);
+void tools_move_var_to_center_of_momentum(int _N_Real, int var);
 
 /* 
  * Init the MEGNO particles
