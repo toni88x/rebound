@@ -10,7 +10,7 @@ except:
 
 from .particle import Particle
 
-def OrbitPlot(sim, figsize=(5,5), lim=None, Narc=100, unitlabel=None, color=False, periastron=False, trails=False, lw=1.):
+def OrbitPlot(sim, figsize=(5,5), lim=None, Narc=100, unitlabel=None, color=False, periastron=False, trails=False, lw=1.,binaryorbits=False):
         """
         Convenience function for plotting instantaneous orbits.
 
@@ -84,14 +84,20 @@ def OrbitPlot(sim, figsize=(5,5), lim=None, Narc=100, unitlabel=None, color=Fals
 
         ax.scatter(particles[0].x,particles[0].y, marker="*", s=35*lw, facecolor="black", edgecolor=None, zorder=3)
         for i, o in enumerate(orbits):
-            primary = sim.calculate_com(i+1)
+            if binaryorbits:
+                primary1 = sim.calculate_com(i+1)
+                primary = sim.calculate_com(i+2)
+                ascale = primary1.m/primary.m
+            else:
+                primary = sim.calculate_com(i+1)
+                ascale = 1.
             colori = cm(float(i+1)/float(sim.N-1))
-            pp = Particle(a=o.a, f=o.f, inc=o.inc, omega=o.omega, Omega=o.Omega, e=o.e, m=particles[i+1].m, primary=primary, simulation=sim)
+            pp = Particle(a=o.a*ascale, f=o.f, inc=o.inc, omega=o.omega, Omega=o.Omega, e=o.e, m=particles[i+1].m, primary=primary, simulation=sim)
             ax.scatter(pp.x, pp.y, s=25*lw, facecolor="black", edgecolor=None, zorder=3)
             if o.a>0.: # bound orbit
                 phase = np.linspace(0,2.*np.pi,Narc)
                 for ph in phase:
-                    newp = Particle(a=o.a, f=o.f+ph, inc=o.inc, omega=o.omega, Omega=o.Omega, e=o.e, m=particles[i+1].m, primary=primary, simulation=sim)
+                    newp = Particle(a=o.a*ascale, f=o.f+ph, inc=o.inc, omega=o.omega, Omega=o.Omega, e=o.e, m=particles[i+1].m, primary=primary, simulation=sim)
                     if trails:
                         alpha = ph/(2.*np.pi)
                         color = (colori[0], colori[1], colori[2], alpha)
