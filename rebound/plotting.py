@@ -87,17 +87,15 @@ def OrbitPlot(sim, figsize=(5,5), lim=None, Narc=100, unitlabel=None, color=Fals
             if binaryorbits:
                 primary1 = sim.calculate_com(i+1)
                 primary = sim.calculate_com(i+2)
-                primary.m = primary1.m
                 ascale = primary1.m/primary.m
             else:
                 primary = sim.calculate_com(i+1)
                 ascale = 1.
-            print primary, primary1
             ax.scatter(primary.x,primary.y, marker="o", s=35*lw, facecolor="red", edgecolor=None, zorder=4)
             colori = cm(float(i+1)/float(sim.N-1))
             pp = Particle(a=o.a*ascale, f=o.f, inc=o.inc, omega=o.omega, Omega=o.Omega, e=o.e, m=particles[i+1].m, primary=primary, simulation=sim)
             ax.scatter(pp.x, pp.y, s=25*lw, facecolor="black", edgecolor=None, zorder=3)
-            ax.scatter(particles[i+1].x, particles[i+1].y, s=25*lw, facecolor="green", edgecolor=None, zorder=3)
+            ax.scatter(particles[i+1].x, particles[i+1].y, s=25*lw, facecolor="green", edgecolor=None, zorder=3, alpha=.5)
             if o.a>0.: # bound orbit
                 phase = np.linspace(0,2.*np.pi,Narc)
                 for ph in phase:
