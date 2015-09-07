@@ -500,129 +500,36 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 	const double dt_done2 = dt_done * dt_done;
 	for(int k=0;k<N3;++k) {
 		{
-			{
-			double inp = b.p6[k]/72. * dt_done2;
-			double y   = inp - csx[k];
+			double inp = (b.p6[k]/72. + b.p5[k]/56. + b.p4[k]/42. + b.p3[k]/30. + b.p2[k]/20. + b.p1[k]/12. + b.p0[k]/6. + a0[k]/2.) 
+					* dt_done2 + v0[k] * dt_done;
+			double y   = inp;// - csx[k];
 			double tmp = x0[k] + y;
 			csx[k]     = (tmp - x0[k]) - y;
 			x0[k]      = tmp;
-			}
-			{
-			double inp = b.p5[k]/56. * dt_done2;
-			double y   = inp - csx[k];
-			double tmp = x0[k] + y;
-			csx[k]     = (tmp - x0[k]) - y;
-			x0[k]      = tmp;
-			}
-			{
-			double inp = b.p4[k]/42. * dt_done2;
-			double y   = inp - csx[k];
-			double tmp = x0[k] + y;
-			csx[k]     = (tmp - x0[k]) - y;
-			x0[k]      = tmp;
-			}
-			{
-			double inp = b.p3[k]/30. * dt_done2;
-			double y   = inp - csx[k];
-			double tmp = x0[k] + y;
-			csx[k]     = (tmp - x0[k]) - y;
-			x0[k]      = tmp;
-			}
-			{
-			double inp = b.p2[k]/20. * dt_done2;
-			double y   = inp - csx[k];
-			double tmp = x0[k] + y;
-			csx[k]     = (tmp - x0[k]) - y;
-			x0[k]      = tmp;
-			}
-			{
-			double inp = b.p1[k]/12. * dt_done2;
-			double y   = inp - csx[k];
-			double tmp = x0[k] + y;
-			csx[k]     = (tmp - x0[k]) - y;
-			x0[k]      = tmp;
-			}
-			{
-			double inp = b.p0[k]/6. * dt_done2;
-			double y   = inp - csx[k];
-			double tmp = x0[k] + y;
-			csx[k]     = (tmp - x0[k]) - y;
-			x0[k]      = tmp;
-			}
-			{
-			double inp = a0[k]/2. * dt_done2;
-			double y   = inp - csx[k];
-			double tmp = x0[k] + y;
-			csx[k]     = (tmp - x0[k]) - y;
-			x0[k]      = tmp;
-			}
-			{
-			double inp = v0[k] * dt_done;
-			double y   = inp - csx[k];
-			double tmp = x0[k] + y;
-			csx[k]     = (tmp - x0[k]) - y;
-			x0[k]      = tmp;
-			}
 
+			/*
+			double a = x0[k];
+			csx[k]  +=  (b.p6[k]/72. + b.p5[k]/56. + b.p4[k]/42. + b.p3[k]/30. + b.p2[k]/20. + b.p1[k]/12. + b.p0[k]/6. + a0[k]/2.) 
+					* dt_done2 + v0[k] * dt_done;
+			x0[k]    = a + csx[k];
+			csx[k]  += a - x0[k]; 
+			*/
 		}
 		{
-			{
-			double inp = b.p6[k]/8. * dt_done;
-			double y   = inp - csv[k];
+			double inp = (b.p6[k]/8. + b.p5[k]/7. + b.p4[k]/6. + b.p3[k]/5. + b.p2[k]/4. + b.p1[k]/3. + b.p0[k]/2. + a0[k])
+					* dt_done;
+			double y   = inp;// - csv[k];
 			double tmp = v0[k] + y;
 			csv[k]     = (tmp - v0[k]) - y;
 			v0[k]      = tmp;
-			}
-			{
-			double inp = b.p5[k]/7.* dt_done;
-			double y   = inp - csv[k];
-			double tmp = v0[k] + y;
-			csv[k]     = (tmp - v0[k]) - y;
-			v0[k]      = tmp;
-			}
-			{
-			double inp = b.p4[k]/6. * dt_done;
-			double y   = inp - csv[k];
-			double tmp = v0[k] + y;
-			csv[k]     = (tmp - v0[k]) - y;
-			v0[k]      = tmp;
-			}
-			{
-			double inp = b.p3[k]/5. * dt_done;
-			double y   = inp - csv[k];
-			double tmp = v0[k] + y;
-			csv[k]     = (tmp - v0[k]) - y;
-			v0[k]      = tmp;
-			}
-			{
-			double inp = b.p2[k]/4. * dt_done;
-			double y   = inp - csv[k];
-			double tmp = v0[k] + y;
-			csv[k]     = (tmp - v0[k]) - y;
-			v0[k]      = tmp;
-			}
-			{
-			double inp = b.p1[k]/3. * dt_done;
-			double y   = inp - csv[k];
-			double tmp = v0[k] + y;
-			csv[k]     = (tmp - v0[k]) - y;
-			v0[k]      = tmp;
-			}
-			{
-			double inp = b.p0[k]/2. * dt_done;
-			double y   = inp - csv[k];
-			double tmp = v0[k] + y;
-			csv[k]     = (tmp - v0[k]) - y;
-			v0[k]      = tmp;
-			}
-			{
-			double inp = a0[k] * dt_done;
-			double y   = inp - csv[k];
-			double tmp = v0[k] + y;
-			csv[k]     = (tmp - v0[k]) - y;
-			v0[k]      = tmp;
-			}
  
+ 			/*
+			double a = v0[k]; 
+			csv[k]  += (b.p6[k]/8. + b.p5[k]/7. + b.p4[k]/6. + b.p3[k]/5. + b.p2[k]/4. + b.p1[k]/3. + b.p0[k]/2. + a0[k])
+					* dt_done;
+			v0[k]    = a + csv[k];
+			csv[k]  += a - v0[k];
+			*/
 		}
 	}
 
