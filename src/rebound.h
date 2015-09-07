@@ -195,6 +195,7 @@ struct reb_simulation_integrator_ias15 {
 	double* restrict x0;			///<                      position (used for initial values at h=0) 
 	double* restrict v0;			///<                      velocity
 	double* restrict a0;			///<                      acceleration
+	double* restrict cs0;			///<                      acceleration
 	double* restrict csx;			///<                      compensated summation
 	double* restrict csv;			///<                      compensated summation
 
