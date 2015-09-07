@@ -301,17 +301,23 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 				at[3*k+1] = particles[k].ay;  
 				at[3*k+2] = particles[k].az;
 			}
+			double* restrict const cs = (double*)r->gravity_cs;
 			switch (n) {							// Improve b and g values
 				case 1: 
 					for(int k=0;k<N3;++k) {
 						double tmp = g.p0[k];
-						g.p0[k]  = (at[k] - a0[k]) / rr[0];
+						double inp = -a0[k];
+						double yyy = inp - cs[k];
+						double gk = at[k] + yyy;
+						g.p0[k]  = gk/rr[0];
 						b.p0[k] += g.p0[k] - tmp;
 					} break;
 				case 2: 
 					for(int k=0;k<N3;++k) {
 						double tmp = g.p1[k];
-						const double gk = at[k] - a0[k];
+						double inp = -a0[k];
+						double yyy = inp - cs[k];
+						double gk = at[k] + yyy;
 						g.p1[k] = (gk/rr[1] - g.p0[k])/rr[2];
 						tmp = g.p1[k] - tmp;
 						b.p0[k] += tmp * c[0];
@@ -320,7 +326,9 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 				case 3: 
 					for(int k=0;k<N3;++k) {
 						double tmp = g.p2[k];
-						const double gk = at[k] - a0[k];
+						double inp = -a0[k];
+						double yyy = inp - cs[k];
+						double gk = at[k] + yyy;
 						g.p2[k] = ((gk/rr[3] - g.p0[k])/rr[4] - g.p1[k])/rr[5];
 						tmp = g.p2[k] - tmp;
 						b.p0[k] += tmp * c[1];
@@ -330,7 +338,9 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 				case 4:
 					for(int k=0;k<N3;++k) {
 						double tmp = g.p3[k];
-						const double gk = at[k] - a0[k];
+						double inp = -a0[k];
+						double yyy = inp - cs[k];
+						double gk = at[k] + yyy;
 						g.p3[k] = (((gk/rr[6] - g.p0[k])/rr[7] - g.p1[k])/rr[8] - g.p2[k])/rr[9];
 						tmp = g.p3[k] - tmp;
 						b.p0[k] += tmp * c[3];
@@ -341,7 +351,9 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 				case 5:
 					for(int k=0;k<N3;++k) {
 						double tmp = g.p4[k];
-						const double gk = at[k] - a0[k];
+						double inp = -a0[k];
+						double yyy = inp - cs[k];
+						double gk = at[k] + yyy;
 						g.p4[k] = ((((gk/rr[10] - g.p0[k])/rr[11] - g.p1[k])/rr[12] - g.p2[k])/rr[13] - g.p3[k])/rr[14];
 						tmp = g.p4[k] - tmp;
 						b.p0[k] += tmp * c[6];
@@ -353,7 +365,9 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 				case 6:
 					for(int k=0;k<N3;++k) {
 						double tmp = g.p5[k];
-						const double gk = at[k] - a0[k];
+						double inp = -a0[k];
+						double yyy = inp - cs[k];
+						double gk = at[k] + yyy;
 						g.p5[k] = (((((gk/rr[15] - g.p0[k])/rr[16] - g.p1[k])/rr[17] - g.p2[k])/rr[18] - g.p3[k])/rr[19] - g.p4[k])/rr[20];
 						tmp = g.p5[k] - tmp;
 						b.p0[k] += tmp * c[10];
@@ -369,7 +383,9 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 					double maxb6ktmp = 0.0;
 					for(int k=0;k<N3;++k) {
 						double tmp = g.p6[k];
-						const double gk = at[k] - a0[k];
+						double inp = -a0[k];
+						double yyy = inp - cs[k];
+						double gk = at[k] + yyy;
 						g.p6[k] = ((((((gk/rr[21] - g.p0[k])/rr[22] - g.p1[k])/rr[23] - g.p2[k])/rr[24] - g.p3[k])/rr[25] - g.p4[k])/rr[26] - g.p5[k])/rr[27];
 						tmp = g.p6[k] - tmp;	
 						b.p0[k] += tmp * c[15];
