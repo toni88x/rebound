@@ -63,13 +63,13 @@ struct reb_vec3d {
  * @brief Generic 7d pointer, for internal use only (IAS15).
  */
 struct reb_dp7 {
-	double* restrict p0; ///< 0 substep
-	double* restrict p1; ///< 1 substep
-	double* restrict p2; ///< 2 substep
-	double* restrict p3; ///< 3 substep
-	double* restrict p4; ///< 4 substep
-	double* restrict p5; ///< 5 substep
-	double* restrict p6; ///< 6 substep
+	long double* restrict p0; ///< 0 substep
+	long double* restrict p1; ///< 1 substep
+	long double* restrict p2; ///< 2 substep
+	long double* restrict p3; ///< 3 substep
+	long double* restrict p4; ///< 4 substep
+	long double* restrict p5; ///< 5 substep
+	long double* restrict p6; ///< 6 substep
 };
 
 /**

@@ -61,13 +61,13 @@ void integrator_generate_constants(void);
  * @brief Struct containing pointers to intermediate values
  */
 struct reb_dpconst7 {
-	double* const restrict p0;  ///< Temporary values at intermediate step 0 
-	double* const restrict p1;  ///< Temporary values at intermediate step 1 
-	double* const restrict p2;  ///< Temporary values at intermediate step 2 
-	double* const restrict p3;  ///< Temporary values at intermediate step 3 
-	double* const restrict p4;  ///< Temporary values at intermediate step 4 
-	double* const restrict p5;  ///< Temporary values at intermediate step 5 
-	double* const restrict p6;  ///< Temporary values at intermediate step 6 
+	long double* const restrict p0;  ///< Temporary values at intermediate step 0 
+	long double* const restrict p1;  ///< Temporary values at intermediate step 1 
+	long double* const restrict p2;  ///< Temporary values at intermediate step 2 
+	long double* const restrict p3;  ///< Temporary values at intermediate step 3 
+	long double* const restrict p4;  ///< Temporary values at intermediate step 4 
+	long double* const restrict p5;  ///< Temporary values at intermediate step 5 
+	long double* const restrict p6;  ///< Temporary values at intermediate step 6 
 };
 
 // Helper functions for resetting the b and e coefficients
@@ -81,14 +81,14 @@ static void predict_next_step(double ratio, int N3,  const struct reb_dpconst7 _
 static const double safety_factor 			= 0.25;	/**< Maximum increase/deacrease of consecutve timesteps. */
 
 // Gauss Radau spacings
-static const double h[8]	= { 0.0, 0.0562625605369221464656521910, 0.1802406917368923649875799428, 0.3526247171131696373739077702, 0.5471536263305553830014485577, 0.7342101772154105410531523211, 0.8853209468390957680903597629, 0.9775206135612875018911745004}; 
+static const long double h[8]	= { 0.0, 0.0562625605369221464656521910, 0.1802406917368923649875799428, 0.3526247171131696373739077702, 0.5471536263305553830014485577, 0.7342101772154105410531523211, 0.8853209468390957680903597629, 0.9775206135612875018911745004}; 
 // Other constants
-static const double rr[28] = {0.0562625605369221464656522, 0.1802406917368923649875799, 0.1239781311999702185219278, 0.3526247171131696373739078, 0.2963621565762474909082556, 0.1723840253762772723863278, 0.5471536263305553830014486, 0.4908910657936332365357964, 0.3669129345936630180138686, 0.1945289092173857456275408, 0.7342101772154105410531523, 0.6779476166784883945875001, 0.5539694854785181760655724, 0.3815854601022409036792446, 0.1870565508848551580517038, 0.8853209468390957680903598, 0.8290583863021736216247076, 0.7050802551022034031027798, 0.5326962297259261307164520, 0.3381673205085403850889112, 0.1511107696236852270372074, 0.9775206135612875018911745, 0.9212580530243653554255223, 0.7972799218243951369035946, 0.6248958964481178645172667, 0.4303669872307321188897259, 0.2433104363458769608380222, 0.0921996667221917338008147};
-static const double c[21] = {-0.0562625605369221464656522, 0.0101408028300636299864818, -0.2365032522738145114532321, -0.0035758977292516175949345, 0.0935376952594620658957485, -0.5891279693869841488271399, 0.0019565654099472210769006, -0.0547553868890686864408084, 0.4158812000823068616886219, -1.1362815957175395318285885, -0.0014365302363708915610919, 0.0421585277212687082291130, -0.3600995965020568162530901, 1.2501507118406910366792415, -1.8704917729329500728817408, 0.0012717903090268677658020, -0.0387603579159067708505249, 0.3609622434528459872559689, -1.4668842084004269779203515, 2.9061362593084293206895457, -2.7558127197720458409721005};
-static const double d[21] = {0.0562625605369221464656522, 0.0031654757181708292499905, 0.2365032522738145114532321, 0.0001780977692217433881125, 0.0457929855060279188954539, 0.5891279693869841488271399, 0.0000100202365223291272096, 0.0084318571535257015445000, 0.2535340690545692665214616, 1.1362815957175395318285885, 0.0000005637641639318207610, 0.0015297840025004658189490, 0.0978342365324440053653648, 0.8752546646840910912297246, 1.8704917729329500728817408, 0.0000000317188154017613665, 0.0002762930909826476593130, 0.0360285539837364596003871, 0.5767330002770787313544596, 2.2485887607691598182153473, 2.7558127197720458409721005};
+static const long double rr[28] = {0.0562625605369221464656522, 0.1802406917368923649875799, 0.1239781311999702185219278, 0.3526247171131696373739078, 0.2963621565762474909082556, 0.1723840253762772723863278, 0.5471536263305553830014486, 0.4908910657936332365357964, 0.3669129345936630180138686, 0.1945289092173857456275408, 0.7342101772154105410531523, 0.6779476166784883945875001, 0.5539694854785181760655724, 0.3815854601022409036792446, 0.1870565508848551580517038, 0.8853209468390957680903598, 0.8290583863021736216247076, 0.7050802551022034031027798, 0.5326962297259261307164520, 0.3381673205085403850889112, 0.1511107696236852270372074, 0.9775206135612875018911745, 0.9212580530243653554255223, 0.7972799218243951369035946, 0.6248958964481178645172667, 0.4303669872307321188897259, 0.2433104363458769608380222, 0.0921996667221917338008147};
+static const long double c[21] = {-0.0562625605369221464656522, 0.0101408028300636299864818, -0.2365032522738145114532321, -0.0035758977292516175949345, 0.0935376952594620658957485, -0.5891279693869841488271399, 0.0019565654099472210769006, -0.0547553868890686864408084, 0.4158812000823068616886219, -1.1362815957175395318285885, -0.0014365302363708915610919, 0.0421585277212687082291130, -0.3600995965020568162530901, 1.2501507118406910366792415, -1.8704917729329500728817408, 0.0012717903090268677658020, -0.0387603579159067708505249, 0.3609622434528459872559689, -1.4668842084004269779203515, 2.9061362593084293206895457, -2.7558127197720458409721005};
+static const long double d[21] = {0.0562625605369221464656522, 0.0031654757181708292499905, 0.2365032522738145114532321, 0.0001780977692217433881125, 0.0457929855060279188954539, 0.5891279693869841488271399, 0.0000100202365223291272096, 0.0084318571535257015445000, 0.2535340690545692665214616, 1.1362815957175395318285885, 0.0000005637641639318207610, 0.0015297840025004658189490, 0.0978342365324440053653648, 0.8752546646840910912297246, 1.8704917729329500728817408, 0.0000000317188154017613665, 0.0002762930909826476593130, 0.0360285539837364596003871, 0.5767330002770787313544596, 2.2485887607691598182153473, 2.7558127197720458409721005};
 
 // Weights for integration of a first order differential equation (Note: interval length = 2) 
-static const double w[8] = {0.03125, 0.185358154802979278540728972807180754479812609, 0.304130620646785128975743291458180383736715043, 0.376517545389118556572129261157225608762708603, 0.391572167452493593082499533303669362149363727, 0.347014795634501068709955597003528601733139176, 0.249647901329864963257869294715235590174262844, 0.114508814744257199342353731044292225247093225};
+static const long double w[8] = {0.03125, 0.185358154802979278540728972807180754479812609, 0.304130620646785128975743291458180383736715043, 0.376517545389118556572129261157225608762708603, 0.391572167452493593082499533303669362149363727, 0.347014795634501068709955597003528601733139176, 0.249647901329864963257869294715235590174262844, 0.114508814744257199342353731044292225247093225};
 
 
 static void free_dp7(struct reb_dp7* dp7){
@@ -108,13 +108,13 @@ static void free_dp7(struct reb_dp7* dp7){
 	dp7->p6 = NULL;
 }
 static void realloc_dp7(struct reb_dp7* const dp7, const int N3){
-	dp7->p0 = realloc(dp7->p0,sizeof(double)*N3);
-	dp7->p1 = realloc(dp7->p1,sizeof(double)*N3);
-	dp7->p2 = realloc(dp7->p2,sizeof(double)*N3);
-	dp7->p3 = realloc(dp7->p3,sizeof(double)*N3);
-	dp7->p4 = realloc(dp7->p4,sizeof(double)*N3);
-	dp7->p5 = realloc(dp7->p5,sizeof(double)*N3);
-	dp7->p6 = realloc(dp7->p6,sizeof(double)*N3);
+	dp7->p0 = realloc(dp7->p0,sizeof(long double)*N3);
+	dp7->p1 = realloc(dp7->p1,sizeof(long double)*N3);
+	dp7->p2 = realloc(dp7->p2,sizeof(long double)*N3);
+	dp7->p3 = realloc(dp7->p3,sizeof(long double)*N3);
+	dp7->p4 = realloc(dp7->p4,sizeof(long double)*N3);
+	dp7->p5 = realloc(dp7->p5,sizeof(long double)*N3);
+	dp7->p6 = realloc(dp7->p6,sizeof(long double)*N3);
 	for (int k=0;k<N3;k++){
 		dp7->p0[k] = 0.;
 		dp7->p1[k] = 0.;
@@ -259,11 +259,11 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 				const int k1 = 3*i+1;
 				const int k2 = 3*i+2;
 
-				double xk0  = -csx[k0] + (s[8]*b.p6[k0] + s[7]*b.p5[k0] + s[6]*b.p4[k0] + s[5]*b.p3[k0] + s[4]*b.p2[k0] + s[3]*b.p1[k0] + s[2]*b.p0[k0] + s[1]*a0[k0] + s[0]*v0[k0] );
+				long double xk0  = -csx[k0] + (s[8]*b.p6[k0] + s[7]*b.p5[k0] + s[6]*b.p4[k0] + s[5]*b.p3[k0] + s[4]*b.p2[k0] + s[3]*b.p1[k0] + s[2]*b.p0[k0] + s[1]*a0[k0] + s[0]*v0[k0] );
 				particles[i].x = xk0 + x0[k0];
-				double xk1  = -csx[k1] + (s[8]*b.p6[k1] + s[7]*b.p5[k1] + s[6]*b.p4[k1] + s[5]*b.p3[k1] + s[4]*b.p2[k1] + s[3]*b.p1[k1] + s[2]*b.p0[k1] + s[1]*a0[k1] + s[0]*v0[k1] );
+				long double xk1  = -csx[k1] + (s[8]*b.p6[k1] + s[7]*b.p5[k1] + s[6]*b.p4[k1] + s[5]*b.p3[k1] + s[4]*b.p2[k1] + s[3]*b.p1[k1] + s[2]*b.p0[k1] + s[1]*a0[k1] + s[0]*v0[k1] );
 				particles[i].y = xk1 + x0[k1];
-				double xk2  = -csx[k2] + (s[8]*b.p6[k2] + s[7]*b.p5[k2] + s[6]*b.p4[k2] + s[5]*b.p3[k2] + s[4]*b.p2[k2] + s[3]*b.p1[k2] + s[2]*b.p0[k2] + s[1]*a0[k2] + s[0]*v0[k2] );
+				long double xk2  = -csx[k2] + (s[8]*b.p6[k2] + s[7]*b.p5[k2] + s[6]*b.p4[k2] + s[5]*b.p3[k2] + s[4]*b.p2[k2] + s[3]*b.p1[k2] + s[2]*b.p0[k2] + s[1]*a0[k2] + s[0]*v0[k2] );
 				particles[i].z = xk2 + x0[k2];
 			}
 			if (N_var || (r->additional_forces && r->force_is_velocity_dependent)){
@@ -311,7 +311,7 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 				case 2: 
 					for(int k=0;k<N3;++k) {
 						double tmp = g.p1[k];
-						const double gk = at[k] - a0[k];
+						const long double gk = at[k] - a0[k];
 						g.p1[k] = (gk/rr[1] - g.p0[k])/rr[2];
 						tmp = g.p1[k] - tmp;
 						b.p0[k] += tmp * c[0];
@@ -320,7 +320,7 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 				case 3: 
 					for(int k=0;k<N3;++k) {
 						double tmp = g.p2[k];
-						const double gk = at[k] - a0[k];
+						const long double gk = at[k] - a0[k];
 						g.p2[k] = ((gk/rr[3] - g.p0[k])/rr[4] - g.p1[k])/rr[5];
 						tmp = g.p2[k] - tmp;
 						b.p0[k] += tmp * c[1];
@@ -330,7 +330,7 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 				case 4:
 					for(int k=0;k<N3;++k) {
 						double tmp = g.p3[k];
-						const double gk = at[k] - a0[k];
+						const long double gk = at[k] - a0[k];
 						g.p3[k] = (((gk/rr[6] - g.p0[k])/rr[7] - g.p1[k])/rr[8] - g.p2[k])/rr[9];
 						tmp = g.p3[k] - tmp;
 						b.p0[k] += tmp * c[3];
@@ -341,7 +341,7 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 				case 5:
 					for(int k=0;k<N3;++k) {
 						double tmp = g.p4[k];
-						const double gk = at[k] - a0[k];
+						const long double gk = at[k] - a0[k];
 						g.p4[k] = ((((gk/rr[10] - g.p0[k])/rr[11] - g.p1[k])/rr[12] - g.p2[k])/rr[13] - g.p3[k])/rr[14];
 						tmp = g.p4[k] - tmp;
 						b.p0[k] += tmp * c[6];
@@ -353,7 +353,7 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 				case 6:
 					for(int k=0;k<N3;++k) {
 						double tmp = g.p5[k];
-						const double gk = at[k] - a0[k];
+						const long double gk = at[k] - a0[k];
 						g.p5[k] = (((((gk/rr[15] - g.p0[k])/rr[16] - g.p1[k])/rr[17] - g.p2[k])/rr[18] - g.p3[k])/rr[19] - g.p4[k])/rr[20];
 						tmp = g.p5[k] - tmp;
 						b.p0[k] += tmp * c[10];
@@ -369,7 +369,7 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 					double maxb6ktmp = 0.0;
 					for(int k=0;k<N3;++k) {
 						double tmp = g.p6[k];
-						const double gk = at[k] - a0[k];
+						const long double gk = at[k] - a0[k];
 						g.p6[k] = ((((((gk/rr[21] - g.p0[k])/rr[22] - g.p1[k])/rr[23] - g.p2[k])/rr[24] - g.p3[k])/rr[25] - g.p4[k])/rr[26] - g.p5[k])/rr[27];
 						tmp = g.p6[k] - tmp;	
 						b.p0[k] += tmp * c[15];
