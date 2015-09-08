@@ -314,8 +314,8 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 						const double gk = at[k] - a0[k];
 						g.p1[k] = (gk/rr[1] - (double)g.p0[k])/rr[2];
 						tmp = g.p1[k] - tmp;
-						b.p0[k] += tmp * c[0];
-						b.p1[k] += tmp;
+						b.p0[k] += (double)(tmp * c[0]);
+						b.p1[k] += (double)(tmp);
 					} break;
 				case 3: 
 					for(int k=0;k<N3;++k) {
@@ -323,9 +323,9 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 						const double gk = at[k] - a0[k];
 						g.p2[k] = ((gk/rr[3] - (double)g.p0[k])/rr[4] - (double)g.p1[k])/rr[5];
 						tmp = g.p2[k] - tmp;
-						b.p0[k] += tmp * c[1];
-						b.p1[k] += tmp * c[2];
-						b.p2[k] += tmp;
+						b.p0[k] += (double)(tmp * c[1]);
+						b.p1[k] += (double)(tmp * c[2]);
+						b.p2[k] += (double)(tmp);
 					} break;
 				case 4:
 					for(int k=0;k<N3;++k) {
@@ -333,10 +333,10 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 						const double gk = at[k] - a0[k];
 						g.p3[k] = (((gk/rr[6] - (double)g.p0[k])/rr[7] - (double)g.p1[k])/rr[8] - (double)g.p2[k])/rr[9];
 						tmp = g.p3[k] - tmp;
-						b.p0[k] += tmp * c[3];
-						b.p1[k] += tmp * c[4];
-						b.p2[k] += tmp * c[5];
-						b.p3[k] += tmp;
+						b.p0[k] += (double)(tmp * c[3]);
+						b.p1[k] += (double)(tmp * c[4]);
+						b.p2[k] += (double)(tmp * c[5]);
+						b.p3[k] += (double)(tmp);
 					} break;
 				case 5:
 					for(int k=0;k<N3;++k) {
@@ -344,11 +344,11 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 						const double gk = at[k] - a0[k];
 						g.p4[k] = ((((gk/rr[10] - (double)g.p0[k])/rr[11] - (double)g.p1[k])/rr[12] - (double)g.p2[k])/rr[13] - (double)g.p3[k])/rr[14];
 						tmp = g.p4[k] - tmp;
-						b.p0[k] += tmp * c[6];
-						b.p1[k] += tmp * c[7];
-						b.p2[k] += tmp * c[8];
-						b.p3[k] += tmp * c[9];
-						b.p4[k] += tmp;
+						b.p0[k] += (double)(tmp * c[6]);
+						b.p1[k] += (double)(tmp * c[7]);
+						b.p2[k] += (double)(tmp * c[8]);
+						b.p3[k] += (double)(tmp * c[9]);
+						b.p4[k] += (double)(tmp);
 					} break;
 				case 6:
 					for(int k=0;k<N3;++k) {
@@ -356,12 +356,12 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 						const double gk = at[k] - a0[k];
 						g.p5[k] = (((((gk/rr[15] - (double)g.p0[k])/rr[16] - (double)g.p1[k])/rr[17] - (double)g.p2[k])/rr[18] - (double)g.p3[k])/rr[19] - (double)g.p4[k])/rr[20];
 						tmp = g.p5[k] - tmp;
-						b.p0[k] += tmp * c[10];
-						b.p1[k] += tmp * c[11];
-						b.p2[k] += tmp * c[12];
-						b.p3[k] += tmp * c[13];
-						b.p4[k] += tmp * c[14];
-						b.p5[k] += tmp;
+						b.p0[k] += (double)(tmp * c[10]);
+						b.p1[k] += (double)(tmp * c[11]);
+						b.p2[k] += (double)(tmp * c[12]);
+						b.p3[k] += (double)(tmp * c[13]);
+						b.p4[k] += (double)(tmp * c[14]);
+						b.p5[k] += (double)(tmp);
 					} break;
 				case 7:
 				{
@@ -372,13 +372,13 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 						const double gk = at[k] - a0[k];
 						g.p6[k] = ((((((gk/rr[21] - (double)g.p0[k])/rr[22] - (double)g.p1[k])/rr[23] - (double)g.p2[k])/rr[24] - (double)g.p3[k])/rr[25] - (double)g.p4[k])/rr[26] - (double)g.p5[k])/rr[27];
 						tmp = g.p6[k] - tmp;	
-						b.p0[k] += tmp * c[15];
-						b.p1[k] += tmp * c[16];
-						b.p2[k] += tmp * c[17];
-						b.p3[k] += tmp * c[18];
-						b.p4[k] += tmp * c[19];
-						b.p5[k] += tmp * c[20];
-						b.p6[k] += tmp;
+						b.p0[k] += (double)(tmp * c[15]);
+						b.p1[k] += (double)(tmp * c[16]);
+						b.p2[k] += (double)(tmp * c[17]);
+						b.p3[k] += (double)(tmp * c[18]);
+						b.p4[k] += (double)(tmp * c[19]);
+						b.p5[k] += (double)(tmp * c[20]);
+						b.p6[k] += (double)(tmp);
 						
 						// Monitor change in b.p6[k] relative to at[k]. The predictor corrector scheme is converged if it is close to 0.
 						if (r->ri_ias15.epsilon_global){
