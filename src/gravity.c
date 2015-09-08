@@ -130,8 +130,9 @@ void reb_calculate_acceleration(struct reb_simulation* r){
 				const double dy = particles[i].y - particles[j].y;
 				const double dz = particles[i].z - particles[j].z;
 				const double r2 = dx*dx + dy*dy + dz*dz + softening2;
-				const double r = sqrt(r2);
-				const double prefact  = G/(r2*r);
+				//const double r = sqrt(r2);
+				const double r3in = pow(r2,-3./2.);
+				const double prefact  = G*r3in; ///(r2*r);
 				const double prefacti = prefact*particles[i].m;
 				const double prefactj = -prefact*particles[j].m;
 				
