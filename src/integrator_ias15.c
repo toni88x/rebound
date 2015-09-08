@@ -194,13 +194,13 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 	}
 
 	for(int k=0;k<N3;k++) {
-		g.p0[k] = (double)(b.p6[k]*d[15] + b.p5[k]*d[10] + b.p4[k]*d[6] + b.p3[k]*d[3]  + b.p2[k]*d[1]  + b.p1[k]*d[0]  + b.p0[k]);
-		g.p1[k] = (double)(b.p6[k]*d[16] + b.p5[k]*d[11] + b.p4[k]*d[7] + b.p3[k]*d[4]  + b.p2[k]*d[2]  + b.p1[k]);
-		g.p2[k] = (double)(b.p6[k]*d[17] + b.p5[k]*d[12] + b.p4[k]*d[8] + b.p3[k]*d[5]  + b.p2[k]);
-		g.p3[k] = (double)(b.p6[k]*d[18] + b.p5[k]*d[13] + b.p4[k]*d[9] + b.p3[k]);
-		g.p4[k] = (double)(b.p6[k]*d[19] + b.p5[k]*d[14] + b.p4[k]);
-		g.p5[k] = (double)(b.p6[k]*d[20] + b.p5[k]);
-		g.p6[k] = (double)(b.p6[k]);
+		g.p0[k] = (double)((double)(b.p6[k])*d[15] + (double)(b.p5[k])*d[10] + (double)(b.p4[k])*d[6] + (double)(b.p3[k])*d[3]  + (double)(b.p2[k])*d[1]  + (double)(b.p1[k])*d[0]  + (double)(b.p0[k]));
+		g.p1[k] = (double)((double)(b.p6[k])*d[16] + (double)(b.p5[k])*d[11] + (double)(b.p4[k])*d[7] + (double)(b.p3[k])*d[4]  + (double)(b.p2[k])*d[2]  + (double)(b.p1[k]));
+		g.p2[k] = (double)((double)(b.p6[k])*d[17] + (double)(b.p5[k])*d[12] + (double)(b.p4[k])*d[8] + (double)(b.p3[k])*d[5]  + (double)(b.p2[k]));
+		g.p3[k] = (double)((double)(b.p6[k])*d[18] + (double)(b.p5[k])*d[13] + (double)(b.p4[k])*d[9] + (double)(b.p3[k]));
+		g.p4[k] = (double)((double)(b.p6[k])*d[19] + (double)(b.p5[k])*d[14] + (double)(b.p4[k]));
+		g.p5[k] = (double)((double)(b.p6[k])*d[20] + (double)(b.p5[k]));
+		g.p6[k] = (double)((double)(b.p6[k]));
 	}
 
 	double integrator_megno_thisdt = 0.;
