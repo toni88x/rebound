@@ -259,11 +259,11 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 				const int k1 = 3*i+1;
 				const int k2 = 3*i+2;
 
-				double xk0  = -csx[k0] + (s[8]*b.p6[k0] + s[7]*b.p5[k0] + s[6]*b.p4[k0] + s[5]*b.p3[k0] + s[4]*b.p2[k0] + s[3]*b.p1[k0] + s[2]*b.p0[k0] + s[1]*a0[k0] + s[0]*v0[k0] );
+				double xk0  = -csx[k0] + (s[8]*(double)b.p6[k0] + s[7]*(double)b.p5[k0] + s[6]*(double)b.p4[k0] + s[5]*(double)b.p3[k0] + s[4]*(double)b.p2[k0] + s[3]*(double)b.p1[k0] + s[2]*(double)b.p0[k0] + s[1]*a0[k0] + s[0]*v0[k0] );
 				particles[i].x = xk0 + x0[k0];
-				double xk1  = -csx[k1] + (s[8]*b.p6[k1] + s[7]*b.p5[k1] + s[6]*b.p4[k1] + s[5]*b.p3[k1] + s[4]*b.p2[k1] + s[3]*b.p1[k1] + s[2]*b.p0[k1] + s[1]*a0[k1] + s[0]*v0[k1] );
+				double xk1  = -csx[k1] + (s[8]*(double)b.p6[k1] + s[7]*(double)b.p5[k1] + s[6]*(double)b.p4[k1] + s[5]*(double)b.p3[k1] + s[4]*(double)b.p2[k1] + s[3]*(double)b.p1[k1] + s[2]*(double)b.p0[k1] + s[1]*a0[k1] + s[0]*v0[k1] );
 				particles[i].y = xk1 + x0[k1];
-				double xk2  = -csx[k2] + (s[8]*b.p6[k2] + s[7]*b.p5[k2] + s[6]*b.p4[k2] + s[5]*b.p3[k2] + s[4]*b.p2[k2] + s[3]*b.p1[k2] + s[2]*b.p0[k2] + s[1]*a0[k2] + s[0]*v0[k2] );
+				double xk2  = -csx[k2] + (s[8]*(double)b.p6[k2] + s[7]*(double)b.p5[k2] + s[6]*(double)b.p4[k2] + s[5]*(double)b.p3[k2] + s[4]*(double)b.p2[k2] + s[3]*(double)b.p1[k2] + s[2]*(double)b.p0[k2] + s[1]*a0[k2] + s[0]*v0[k2] );
 				particles[i].z = xk2 + x0[k2];
 			}
 			if (N_var || (r->additional_forces && r->force_is_velocity_dependent)){
