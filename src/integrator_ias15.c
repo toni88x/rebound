@@ -493,7 +493,7 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 	const double dt_done2 = dt_done * dt_done;
 	for(int k=0;k<N3;++k) {
 		{
-			double inp = (b.p6[k]/72. + b.p5[k]/56. + b.p4[k]/42. + b.p3[k]/30. + b.p2[k]/20. + b.p1[k]/12. + b.p0[k]/6. + a0[k]/2.) 
+			double inp = ((double)(b.p6[k])/72. + (double)(b.p5[k])/56. + (double)(b.p4[k])/42. + (double)(b.p3[k])/30. + (double)(b.p2[k])/20. + (double)(b.p1[k])/12. + (double)(b.p0[k])/6. + a0[k]/2.) 
 					* dt_done2 + v0[k] * dt_done;
 			double y   = inp - csx[k];
 			double tmp = x0[k] + y;
@@ -509,7 +509,7 @@ static int reb_integrator_ias15_step(struct reb_simulation* r) {
 			*/
 		}
 		{
-			double inp = (b.p6[k]/8. + b.p5[k]/7. + b.p4[k]/6. + b.p3[k]/5. + b.p2[k]/4. + b.p1[k]/3. + b.p0[k]/2. + a0[k])
+			double inp = ((double)(b.p6[k])/8. + (double)(b.p5[k])/7. + (double)(b.p4[k])/6. + (double)(b.p3[k])/5. + (double)(b.p2[k])/4. + (double)(b.p1[k])/3. + (double)(b.p0[k])/2. + a0[k])
 					* dt_done;
 			double y   = inp - csv[k];
 			double tmp = v0[k] + y;
