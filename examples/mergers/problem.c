@@ -47,8 +47,22 @@ int main(int argc, char* argv[]){
 	reb_integrate(r, INFINITY);
 }
 
+int* removed_this_timestep = NULL;
+int removed_this_timestep_N = 0;
+int removed_this_timestep_Nmax = 0;
+
 void collision_resolve_merger(struct reb_simulation* r, struct reb_collision c){
 	struct reb_particle* particles = r->particles;
+	for (int i=0;i<removed_this_timestep_N;i++){
+		// Shift indicies for particles involved in collision
+		// This only matters if there are multiple colliions per timestep. 
+		if (c.p1>removed_this_timestep[i]){
+			c.p1--;
+		}
+		if (c.p2>removed_this_timestep[i]){
+			c.p2--;
+		}
+	}
 	struct reb_particle p1 = particles[c.p1];
 	struct reb_particle p2 = particles[c.p2];
 	double x21  = p1.x  - p2.x; 
@@ -75,14 +89,23 @@ void collision_resolve_merger(struct reb_simulation* r, struct reb_collision c){
 	particles[c.p1].vz = cm.vz;
 	particles[c.p1].r = p1.r*pow(cm.m/p1.m,1./3.);	// Assume a constant density
 	particles[c.p1].m = cm.m;
-	// Remove one particle.
-	r->N--;
-	particles[c.p2] = particles[r->N];
+	// Remove one particle, keep particles sorted
+	reb_remove(r,c.p2,1);
+	// Keep track of particles removed this timestep
+	// This matters only if there are multiple mergers per timestep.
+	if (removed_this_timestep_N <= removed_this_timestep_Nmax){
+		removed_this_timestep_Nmax += 16;
+		removed_this_timestep = realloc(removed_this_timestep, sizeof(int)*removed_this_timestep_Nmax);
+	}
+	removed_this_timestep[removed_this_timestep_N] = c.p2;
+	removed_this_timestep_N++;
+
 	// Make sure we don't drift, so let's go back to the center of momentum
 	reb_move_to_com(r);	
 }
 
 void heartbeat(struct reb_simulation* r){
+	removed_this_timestep_N = 0;
 	if (reb_output_check(r, 10.*2.*M_PI)){  
 		reb_output_timing(r, 0);
 	}
