@@ -1,6 +1,7 @@
 from ctypes import *
 from . import clibrebound, Escape, NoParticles, Encounter, SimulationError
 from .particle import *
+from .reboundgl import ReboundGL
 from .units import units_convert_particle, check_units, convert_G
 import math
 import os
@@ -240,6 +241,27 @@ class Simulation(Structure):
                 s += str(p) + "\n"
         s += "---------------------------------"
         print(s)
+
+    def _format_row_(self,title,value):
+        return '<tr><th>{}</th><td>{}</td></tr>'.format(title, value)
+
+    def _repr_html_(self):
+        """
+        HTML representation for Jupyter
+        """
+        s = "<h3>REBOUND Simulation</h3>"
+        s += "<table>"
+        s += self._format_row_("Version", c_char_p.in_dll(clibrebound, "reb_version_str").value.decode('ascii'))
+        s += self._format_row_("Built on", c_char_p.in_dll(clibrebound, "reb_build_str").value.decode('ascii'))
+        s += self._format_row_("Number of particles", self.N)
+        s += self._format_row_("Selected integrator", self.integrator)
+        s += self._format_row_("Simulation time", self.t)
+        s += self._format_row_("Current timestep", self.dt)
+        s +=  "</table>"
+        return s
+
+    def GL(self):
+        return ReboundGL(self)
 
 # Set function pointer for additional forces
     @property
