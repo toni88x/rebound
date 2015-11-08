@@ -1,7 +1,13 @@
 <script id="shader-fs" type="x-shader/x-fragment">
     precision mediump float;
     void main(void) {
-        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+	vec2 pc = gl_PointCoord;
+	pc.x -= 0.5;
+	pc.y -= 0.5;
+	pc.x *= 2.;
+	pc.y *= 2.;
+	float dis = length(pc);
+        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.-dis*dis);
     }
 </script>
 
@@ -11,12 +17,28 @@
     uniform mat4 uPMatrix;
     void main(void) {
         gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+	gl_PointSize = 9.;
+    }
+</script>
+
+<script id="clearshader-fs" type="x-shader/x-fragment">
+    precision mediump float;
+    void main(void) {
+        gl_FragColor = vec4(1.0, 1.0, 1.0, 0.5);
+    }
+</script>
+
+<script id="clearshader-vs" type="x-shader/x-vertex">
+    attribute vec3 aVertexPosition;
+    void main(void) {
+        gl_Position = vec4(aVertexPosition, 1.0);
     }
 </script>
 
 
 <script type="text/javascript">
     var gl;
+    var N = 0;
     function initGL(canvas) {
         try {
             gl = canvas.getContext("experimental-webgl");
@@ -58,12 +80,11 @@
         return shader;
     }
     var shaderProgram;
+    var clearShaderProgram;
     function initShaders() {
-        var fragmentShader = getShader(gl, "shader-fs");
-        var vertexShader = getShader(gl, "shader-vs");
-        shaderProgram = gl.createProgram();
-        gl.attachShader(shaderProgram, vertexShader);
-        gl.attachShader(shaderProgram, fragmentShader);
+	shaderProgram = gl.createProgram();
+        gl.attachShader(shaderProgram, getShader(gl, "shader-vs"));
+        gl.attachShader(shaderProgram, getShader(gl, "shader-fs"));
         gl.linkProgram(shaderProgram);
         if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
             alert("Could not initialise shaders");
@@ -73,45 +94,55 @@
         gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
         shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
         shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+        
+	
+	clearShaderProgram = gl.createProgram();
+        gl.attachShader(clearShaderProgram, getShader(gl, "clearshader-vs"));
+        gl.attachShader(clearShaderProgram, getShader(gl, "clearshader-fs"));
+        gl.linkProgram(clearShaderProgram);
+        if (!gl.getProgramParameter(clearShaderProgram, gl.LINK_STATUS)) {
+            alert("Could not initialise shaders");
+        }
+        gl.useProgram(clearShaderProgram);
+        clearShaderProgram.vertexPositionAttribute = gl.getAttribLocation(clearShaderProgram, "aVertexPosition");
+        gl.enableVertexAttribArray(clearShaderProgram.vertexPositionAttribute);
     }
-    var mvMatrix = mat4.create();
-    var pMatrix = mat4.create();
-    function setMatrixUniforms() {
-        gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
-        gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
+
+    var pointsBuffer; 
+    function fillBuffer(data) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, pointsBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.DYNAMIC_DRAW);
     }
-    var squareVertexPositionBuffer;
-    function initBuffers() {
-        squareVertexPositionBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer);
-        vertices = [
-             0.1,  0.1,  0.0,
-            -0.1,  0.1,  0.0,
-             0.1, -0.1,  0.0,
-            -0.1, -0.1,  0.0
-        ];
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-        squareVertexPositionBuffer.itemSize = 3;
-        squareVertexPositionBuffer.numItems = 4;
-    }
-    function drawScene(shiftx, shifty) {
-        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
-        mat4.identity(mvMatrix);
-        mat4.translate(mvMatrix, [shiftx, shifty, -7.0]);
-        gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer);
-        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, squareVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-        setMatrixUniforms();
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, squareVertexPositionBuffer.numItems);
+    function drawScene() {
+	if (N>0){
+		gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+		gl.clear(gl.COLOR_BUFFER_BIT);
+
+        	gl.useProgram(shaderProgram);
+        	gl.bindBuffer(gl.ARRAY_BUFFER, pointsBuffer);
+		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+		gl.drawArrays(gl.POINTS, 0, N);
+	}
     }
     function webGLStart(id) {
         var canvas = document.getElementById("canvas"+id);
         initGL(canvas);
         initShaders();
-        initBuffers();
-        gl.clearColor(0.0, 0.0, 0.0, 1.0);
-        gl.enable(gl.DEPTH_TEST);
-        drawScene(0.,0.);
+	gl.clearColor(0.0, 0.0, 0.0, 1.0);
+		gl.clear(gl.COLOR_BUFFER_BIT);
+	gl.clear(gl.COLOR_BUFFER_BIT);
+        
+        gl.useProgram(shaderProgram);
+	pointsBuffer = gl.createBuffer();
+        
+	gl.enable(gl.BLEND);
+	gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+    	var pMatrix = mat4.create();
+        mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
+    	var mvMatrix = mat4.create();
+        mat4.identity(mvMatrix);
+        mat4.translate(mvMatrix, [0., 0., -7.0]);
+        gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
+        gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
     }
 </script>

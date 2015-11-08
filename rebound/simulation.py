@@ -264,6 +264,7 @@ class Simulation(Structure):
     def gl(self):
         if not hasattr(self, "rebgl"):
             self.rebgl = ReboundGL(self)
+            self.rebgl.update(self)
         return self.rebgl
 
 # Set function pointer for additional forces
@@ -883,7 +884,7 @@ class Simulation(Structure):
             debug.integrate_other_package(tmax,exact_finish_time)
         
         if hasattr(self, "rebgl"):
-            self.rebgl.update()
+            self.rebgl.update(self)
 
     def integrator_synchronize(self):
         """
