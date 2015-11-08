@@ -21,7 +21,7 @@ class ReboundGL():
         with open(os.path.join(this_dir, "webglframework.js"), 'r') as cfile:
             content += '\n{}\n'.format(cfile.read())
 
-        content += '<canvas id="canvas{0:05d}" style="border: none;" width="700" height="250"></canvas>'.format(self.simid)
+        content += '<canvas id="canvas{0:05d}" style="border: none;" width="400" height="400"></canvas>'.format(self.simid)
         content += "<script>webGLStart({0:05d});</script>".format(self.simid)
         content += "<script>"
         with open(os.path.join(this_dir, "socket.js"), 'r') as cfile:
@@ -29,18 +29,17 @@ class ReboundGL():
         content += "</script>";
         return content
     def update(self, sim):
-        msg = {
-            "id": 0,
-            "N": sim.N,
-            }
-        ReboundSocketHandler.send_updates(msg)
+        scale = 1.
+        if sim.root_size != -1.:
+            scale = 0.20*sim.root_size
         data = []
         for p in sim.particles:
             data.append(p.x)
             data.append(p.y)
             data.append(p.z)
         msg = {
-            "id": 1,
+            "N": sim.N,
+            "scale": scale,
             "data": data
             }
         ReboundSocketHandler.send_updates(msg)
@@ -63,6 +62,7 @@ class MainHandler(tornado.web.RequestHandler):
 
 class ReboundSocketHandler(tornado.websocket.WebSocketHandler):
     clients = set()
+    lastmsg = None
 
     def get_compression_options(self):
         # Non-None enables compression with default options.
@@ -70,6 +70,8 @@ class ReboundSocketHandler(tornado.websocket.WebSocketHandler):
 
     def open(self):
         ReboundSocketHandler.clients.add(self)
+        if ReboundSocketHandler.lastmsg is not None:
+            ReboundSocketHandler.send_updates(ReboundSocketHandler.lastmsg)
 
     def check_origin(self, origin):
         return True
@@ -79,6 +81,7 @@ class ReboundSocketHandler(tornado.websocket.WebSocketHandler):
 
     @classmethod
     def send_updates(cls, msg):
+        cls.lastmsg = msg
         for waiter in cls.clients:
             waiter.write_message(msg)
 

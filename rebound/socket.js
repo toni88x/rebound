@@ -13,13 +13,10 @@ var updater = {
 
     showMessage: function(message) {
         //console.log(message);
-	if (message.id==0){
-		N = message.N;
-	}
-	if (message.id==1){
-		fillBuffer(message.data);
-        	drawScene();
-	}
+	N = message.N;
+	scale = message.scale;
+	fillBuffer(message.data);
+	drawScene();
     }
 };
 updater.start();

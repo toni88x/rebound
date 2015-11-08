@@ -260,7 +260,6 @@ class Simulation(Structure):
         s +=  "</table>"
         return s
 
-    @property
     def gl(self):
         if not hasattr(self, "rebgl"):
             self.rebgl = ReboundGL(self)
