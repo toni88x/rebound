@@ -260,6 +260,12 @@ class Simulation(Structure):
         s +=  "</table>"
         return s
 
+    @property
+    def gl(self):
+        if not hasattr(self, "rebgl"):
+            self.rebgl = ReboundGL(self)
+        return self.rebgl
+
 # Set function pointer for additional forces
     @property
     def additional_forces(self):
@@ -876,8 +882,8 @@ class Simulation(Structure):
         else:
             debug.integrate_other_package(tmax,exact_finish_time)
         
-        if hasattr(self, "gl"):
-            self.gl.update()
+        if hasattr(self, "rebgl"):
+            self.rebgl.update()
 
     def integrator_synchronize(self):
         """
