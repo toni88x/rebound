@@ -260,9 +260,6 @@ class Simulation(Structure):
         s +=  "</table>"
         return s
 
-    def GL(self):
-        return ReboundGL(self)
-
 # Set function pointer for additional forces
     @property
     def additional_forces(self):
@@ -878,6 +875,9 @@ class Simulation(Structure):
                 raise Escape("A particle escaped (r>exit_max_distance).")
         else:
             debug.integrate_other_package(tmax,exact_finish_time)
+        
+        if hasattr(self, "gl"):
+            self.gl.update()
 
     def integrator_synchronize(self):
         """
