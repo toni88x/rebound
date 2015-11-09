@@ -1,50 +1,110 @@
-<script type="text/javascript">
+function startRebContext(rebContext, simid) {
+	///////////////////////////
+	// Setup Context
+	rebContext.simid = simid;	
+	rebContext.N = 0;
+	rebContext.scale = 1;
 
-function webGLStart(updater) {
-	updater.canvas = document.getElementById("canvas"+updater.simid);
+	rebContext.mouseDown = false;
+	rebContext.lastMouseX = null;
+	rebContext.lastMouseY = null;
+	rebContext.mvMatrix = mat4.create();
+	rebContext.mvMatrixRotated = mat4.create();
+	rebContext.pMatrix = mat4.create();
+	rebContext.moonRotationMatrix = mat4.create();
+	mat4.identity(rebContext.moonRotationMatrix);
+	
+	///////////////////////////
+	// Setup OpenGL
+	rebContext.canvas = document.getElementById("canvas"+rebContext.simid);
+	var gl;
 	try {
-	    updater.gl = updater.canvas.getContext("experimental-webgl");
-	    updater.gl.viewportWidth = updater.canvas.width;
-	    updater.gl.viewportHeight = updater.canvas.height;
+	    gl = rebContext.canvas.getContext("experimental-webgl");
+	    gl.viewportWidth = rebContext.canvas.width;
+	    gl.viewportHeight = rebContext.canvas.height;
+	    rebContext.gl = gl;
 	} catch (e) {
 	}
-	if (!updater.gl) {
+	if (!gl) {
 	    alert("Could not initialise WebGL, sorry :-(");
 	}
-	initShaders(updater);
-	updater.gl.clearColor(0.0, 0.0, 0.0, 1.0);
-	updater.gl.clear(gl.COLOR_BUFFER_BIT);
-	updater.gl.clear(gl.COLOR_BUFFER_BIT);
 
-	updater.gl.useProgram(updater.shaderProgram);
-	updater.pointsBuffer = updater.gl.createBuffer();
+	gl.enable(gl.BLEND);
+	gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+	gl.clearColor(0.0, 0.0, 0.0, 1.0);
+	gl.clear(gl.COLOR_BUFFER_BIT);
+	gl.clear(gl.COLOR_BUFFER_BIT);
 
-	updater.gl.enable(updater.gl.BLEND);
-	updater.gl.blendFunc(updater.gl.SRC_ALPHA, updater.gl.ONE);
+	initShaders(rebContext);
+	gl.useProgram(rebContext.shaderProgram);
+	rebContext.pointsBuffer = gl.createBuffer();
 
-	mat4.identity(updater.moonRotationMatrix);
-	updater.canvas.onmousedown = updater.handleMouseDown;
-	updater.canvas.onmouseup = updater.handleMouseUp;
-	updater.canvas.onmousemove = updater.handleMouseMove;
+
+	///////////////////////////
+	// Setting callbacks
+	rebContext.canvas.onmousedown = function(event) {
+		rebContext.mouseDown = true;
+		rebContext.lastMouseX = event.clientX;
+		rebContext.lastMouseY = event.clientY;
+	};
+	rebContext.canvas.onmouseup = function(event) {
+		rebContext.mouseDown = false;
+	};
+	rebContext.canvas.onmousemove = function(event) {
+		if (!rebContext.mouseDown) {
+	      		return;
+	    	}
+		var newX = event.clientX;
+		var newY = event.clientY;
+		
+		var deltaX = newX - rebContext.lastMouseX;
+		var newRotationMatrix = mat4.create();
+		mat4.identity(newRotationMatrix);
+		mat4.rotate(newRotationMatrix, degToRad(deltaX / 1.0), [0, 1, 0]);
+		
+		var deltaY = newY - rebContext.lastMouseY;
+		mat4.rotate(newRotationMatrix, degToRad(deltaY / 1.0), [1, 0, 0]);
+		mat4.multiply(newRotationMatrix, rebContext.moonRotationMatrix, rebContext.moonRotationMatrix);
+		
+		rebContext.lastMouseX = newX
+		rebContext.lastMouseY = newY;
+		drawScene(rebContext);
+	};
+	
+	///////////////////////////
+	// Open Socket
+	var url = "ws://localhost:8877/reboundsocket";
+	rebContext.socket = new WebSocket(url);
+	rebContext.socket.onmessage = function(event) {
+		message = JSON.parse(event.data);
+		rebContext.N = message.N;
+		rebContext.scale = message.scale;
+		fillBuffer(rebContext, message.data);
+		drawScene(rebContext);
+	};
+	rebContext.socket.onopen = function (event){
+		rebContext.socket.send(rebContext.simid);
+	};
+
 }
-function drawScene(updater) {
-	if (updater.N>0){
-		mat4.identity(updater.mvMatrixRotated);
-		mat4.multiply(updater.mvMatrixRotated,updater.mvMatrix);
-		mat4.multiply(updater.mvMatrixRotated,updater.moonRotationMatrix);
-		updater.gl.uniformMatrix4fv(updater.shaderProgram.mvMatrixUniform, false, updater.mvMatrixRotated);
+function drawScene(rebContext) {
+	var gl = rebContext.gl;
+	if (rebContext.N>0){
+		mat4.identity(rebContext.mvMatrixRotated);
+		mat4.multiply(rebContext.mvMatrixRotated,rebContext.mvMatrix);
+		mat4.multiply(rebContext.mvMatrixRotated,rebContext.moonRotationMatrix);
+		gl.uniformMatrix4fv(rebContext.shaderProgram.mvMatrixUniform, false, rebContext.mvMatrixRotated);
 		
 
-		updater.gl.viewport(0, 0, updater.gl.viewportWidth, updater.gl.viewportHeight);
-		updater.gl.clear(updater.gl.COLOR_BUFFER_BIT);
+		gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+		gl.clear(gl.COLOR_BUFFER_BIT);
 
-		updater.gl.useProgram(updater.shaderProgram);
-		updater.gl.bindBuffer(updater.gl.ARRAY_BUFFER, updater.pointsBuffer);
-		updater.gl.vertexAttribPointer(updater.shaderProgram.vertexPositionAttribute, 3, updater.gl.FLOAT, false, 0, 0);
-		updater.gl.drawArrays(updater.gl.POINTS, 0, updater.N);
+		gl.useProgram(rebContext.shaderProgram);
+		gl.bindBuffer(gl.ARRAY_BUFFER, rebContext.pointsBuffer);
+		gl.vertexAttribPointer(rebContext.shaderProgram.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+		gl.drawArrays(gl.POINTS, 0, rebContext.N);
 	}
 }
-	
 	
 function degToRad(f){
 	return f*0.01745329251994;
@@ -79,103 +139,32 @@ function getShader(gl, id) {
 	}
 	return shader;
 }
-function initShaders(updater) {
-	updater.shaderProgram = updater.gl.createProgram();
-	updater.gl.attachShader(updater.shaderProgram, getShader(updater.gl, "shader-vs-"+updater.simid));
-	updater.gl.attachShader(updater.shaderProgram, getShader(updater.gl, "shader-fs-"+updater.simid));
-	updater.gl.linkProgram(updater.shaderProgram);
-	if (!updater.gl.getProgramParameter(updater.shaderProgram, updater.gl.LINK_STATUS)) {
+function initShaders(rebContext) {
+	var gl = rebContext.gl;
+	rebContext.shaderProgram = gl.createProgram();
+	gl.attachShader(rebContext.shaderProgram, getShader(gl, "shader-vs-"+rebContext.simid));
+	gl.attachShader(rebContext.shaderProgram, getShader(gl, "shader-fs-"+rebContext.simid));
+	gl.linkProgram(rebContext.shaderProgram);
+	if (!gl.getProgramParameter(rebContext.shaderProgram, gl.LINK_STATUS)) {
 		alert("Could not initialise shaders");
 	}
-	updater.gl.useProgram(updater.shaderProgram);
-	updater.shaderProgram.vertexPositionAttribute = updater.gl.getAttribLocation(updater.shaderProgram, "aVertexPosition");
-	updater.gl.enableVertexAttribArray(updater.shaderProgram.vertexPositionAttribute);
-	updater.shaderProgram.pMatrixUniform = updater.gl.getUniformLocation(updater.shaderProgram, "uPMatrix");
-	updater.shaderProgram.mvMatrixUniform = updater.gl.getUniformLocation(updater.shaderProgram, "uMVMatrix");	
+	gl.useProgram(rebContext.shaderProgram);
+	rebContext.shaderProgram.vertexPositionAttribute = gl.getAttribLocation(rebContext.shaderProgram, "aVertexPosition");
+	gl.enableVertexAttribArray(rebContext.shaderProgram.vertexPositionAttribute);
+	rebContext.shaderProgram.pMatrixUniform = gl.getUniformLocation(rebContext.shaderProgram, "uPMatrix");
+	rebContext.shaderProgram.mvMatrixUniform = gl.getUniformLocation(rebContext.shaderProgram, "uMVMatrix");	
 }
 
-function fillBuffer(updater,data) {
-	updater.gl.bindBuffer(updater.gl.ARRAY_BUFFER, updater.pointsBuffer);
-	updater.gl.bufferData(updater.gl.ARRAY_BUFFER, new Float32Array(data), updater.gl.DYNAMIC_DRAW);
+function fillBuffer(rebContext,data) {
+	var gl = rebContext.gl;
+	gl.bindBuffer(gl.ARRAY_BUFFER, rebContext.pointsBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.DYNAMIC_DRAW);
 
-	updater.gl.useProgram(updater.shaderProgram);
-	mat4.perspective(45, updater.gl.viewportWidth / updater.gl.viewportHeight, 0.1, 100.0, updater.pMatrix);
-	mat4.identity(updater.mvMatrix);
-	mat4.translate(updater.mvMatrix, [0., 0., -7.0]);
-	mat4.scale(updater.mvMatrix, [1./updater.scale,1./updater.scale,1./updater.scale]);
-	updater.gl.uniformMatrix4fv(updater.shaderProgram.pMatrixUniform, false, updater.pMatrix);
-	updater.gl.uniformMatrix4fv(updater.shaderProgram.mvMatrixUniform, false, updater.mvMatrix);
+	gl.useProgram(rebContext.shaderProgram);
+	mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, rebContext.pMatrix);
+	mat4.identity(rebContext.mvMatrix);
+	mat4.translate(rebContext.mvMatrix, [0., 0., -7.0]);
+	mat4.scale(rebContext.mvMatrix, [1./rebContext.scale,1./rebContext.scale,1./rebContext.scale]);
+	gl.uniformMatrix4fv(rebContext.shaderProgram.pMatrixUniform, false, rebContext.pMatrix);
+	gl.uniformMatrix4fv(rebContext.shaderProgram.mvMatrixUniform, false, rebContext.mvMatrix);
 }
-
-function StartUpdater(updater) {
-	webGLStart(updater);
-	var url = "ws://localhost:8877/reboundsocket";
-	updater.socket = new WebSocket(url);
-	updater.socket.onmessage = function(event) {
-		updater.onmessage(JSON.parse(event.data));
-	};
-	updater.socket.onopen = function (event){
-		updater.socket.send(updater.simid);
-	};
-}
-
-
-var updater{simid} = {
-	simid: {simid},	
-	N: 0,
-	scale: 1,
-	socket: null,
-	gl: null,
-	shaderProgram: null,
-	pointsBuffer: null,
-
-	mouseDown: false,
-	lastMouseX: null,
-	lastMouseY: null,
-	moonRotationMatrix: mat4.create(),
-	mvMatrix: mat4.create(),
-	mvMatrixRotated: mat4.create(),
-	pMatrix: mat4.create(),
-	
-	onmessage: function(message) {
-		updater{simid}.N = message.N;
-		updater{simid}.scale = message.scale;
-		fillBuffer(updater{simid}, message.data);
-		drawScene(updater{simid});
-	},
-	
-	handleMouseDown: function(event) {
-		updater{simid}.mouseDown = true;
-		updater{simid}.lastMouseX = event.clientX;
-		updater{simid}.lastMouseY = event.clientY;
-	},
-	
-	handleMouseUp: function(event) {
-		updater{simid}.mouseDown = false;
-	},
-	
-	handleMouseMove: function(event) {
-		if (!updater{simid}.mouseDown) {
-	      		return;
-	    	}
-		var newX = event.clientX;
-		var newY = event.clientY;
-		
-		var deltaX = newX - lastMouseX;
-		var newRotationMatrix = mat4.create();
-		mat4.identity(newRotationMatrix);
-		mat4.rotate(newRotationMatrix, degToRad(deltaX / 1.0), [0, 1, 0]);
-		
-		var deltaY = newY - lastMouseY;
-		mat4.rotate(newRotationMatrix, degToRad(deltaY / 1.0), [1, 0, 0]);
-		mat4.multiply(newRotationMatrix, updater{simid}.moonRotationMatrix, updater{simid}.moonRotationMatrix);
-		
-		updater{simid}.lastMouseX = newX
-		updater{simid}.lastMouseY = newY;
-		drawScene(updater{simid});
-	},
-};
-	
-	
-StartUpdater(updater{simid});
-</script>
