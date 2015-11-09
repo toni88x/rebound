@@ -4,9 +4,10 @@ import rebound
 
 class ReboundGL():
     def __init__(self,sim):
-        self.simid = id(sim)
+        self.simid = "{0:05d}".format(id(sim))
         try:
-            WebSocketServer()
+            self.app = Application()
+            self.app.listen(8877)
         except:
             pass
 
@@ -18,11 +19,13 @@ class ReboundGL():
             content += '\n{}\n'.format(cfile.read())
         content += "</script>";
         
-        with open(os.path.join(this_dir, "webglframework.js"), 'r') as cfile:
-            content += '\n{}\n'.format(cfile.read())
+        with open(os.path.join(this_dir, "shaders.js"), 'r') as cfile:
+            content += '\n{}\n'.format(cfile.read().replace("{simid}",self.simid))
 
-        content += '<canvas id="canvas{0:05d}" style="border: none;" width="400" height="400"></canvas>'.format(self.simid)
-        content += "<script>webGLStart({0:05d});</script>".format(self.simid)
+        with open(os.path.join(this_dir, "webglframework.js"), 'r') as cfile:
+            content += '\n{}\n'.format(cfile.read().replace("{simid}",self.simid))
+
+        content += '<canvas id="canvas{}" style="border: none;" width="400" height="200"></canvas>'.format(self.simid)
         content += "<script>"
         with open(os.path.join(this_dir, "socket.js"), 'r') as cfile:
             content += '\n{}\n'.format(cfile.read())
@@ -42,7 +45,7 @@ class ReboundGL():
             "scale": scale,
             "data": data
             }
-        ReboundSocketHandler.send_updates(msg)
+        ReboundSocketHandler.send_updates(msg, self.simid)
     
 
 import tornado.web
@@ -51,45 +54,43 @@ import tornado.websocket
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
-            (r"/", MainHandler),
             (r"/reboundsocket", ReboundSocketHandler),
         ]
         tornado.web.Application.__init__(self, handlers)
 
-class MainHandler(tornado.web.RequestHandler):
-    def get(self):
-        return "test"
-
 class ReboundSocketHandler(tornado.websocket.WebSocketHandler):
-    clients = set()
     lastmsg = None
+    clients = dict()
 
     def get_compression_options(self):
         # Non-None enables compression with default options.
         return {}
 
     def open(self):
-        ReboundSocketHandler.clients.add(self)
-        if ReboundSocketHandler.lastmsg is not None:
-            ReboundSocketHandler.send_updates(ReboundSocketHandler.lastmsg)
+        pass
+        #ReboundSocketHandler.clients["new"] = self
 
     def check_origin(self, origin):
         return True
 
     def on_close(self):
-        ReboundSocketHandler.clients.remove(self)
+        deletek = None
+        for k,v in ReboundSocketHandler.clients.iteritems():
+            if v == self:
+                deletek = k
+        if deletek is not None:
+            del ReboundSocketHandler.clients[deletek]
 
     @classmethod
-    def send_updates(cls, msg):
+    def send_updates(cls, msg, simid):
         cls.lastmsg = msg
-        for waiter in cls.clients:
-            waiter.write_message(msg)
+        for k,waiter in cls.clients.iteritems():
+            if k == simid:
+                waiter.write_message(msg)
 
     def on_message(self, message):
+        if message not in ReboundSocketHandler.clients:
+            ReboundSocketHandler.clients[message] = self
+            if ReboundSocketHandler.lastmsg is not None:
+                ReboundSocketHandler.send_updates(ReboundSocketHandler.lastmsg,message)
         pass
-
-class WebSocketServer():
-    def __init__(self):
-        self.app = Application()
-        self.app.listen(8877)
-
