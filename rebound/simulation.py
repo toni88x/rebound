@@ -1,7 +1,6 @@
 from ctypes import *
 from . import clibrebound, Escape, NoParticles, Encounter, SimulationError
 from .particle import *
-from .reboundgl import ReboundGL
 from .units import units_convert_particle, check_units, convert_G
 import math
 import os
@@ -262,6 +261,7 @@ class Simulation(Structure):
 
     def gl(self):
         if not hasattr(self, "rebgl"):
+            from .reboundgl import ReboundGL
             self.rebgl = ReboundGL(self)
             self.rebgl.update(self)
         return self.rebgl

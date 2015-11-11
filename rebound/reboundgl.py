@@ -68,8 +68,8 @@ class ReboundSocketHandler(tornado.websocket.WebSocketHandler):
         return {}
 
     def open(self):
+        # Registration of clients done after first request.
         pass
-        #ReboundSocketHandler.clients["new"] = self
 
     def check_origin(self, origin):
         return True
