@@ -3,8 +3,9 @@ import rebound
 
 
 class ReboundGL():
-    def __init__(self,sim):
+    def __init__(self,sim, size):
         self.simid = "{0:05d}".format(id(sim))
+        self.width, self.height = size
         try:
             self.app = Application()
             self.app.listen(8877)
@@ -25,7 +26,7 @@ class ReboundGL():
         # Canvas specific JS + HTML
         with open(os.path.join(this_dir, "shaders.js"), 'r') as cfile:
             content += '\n{}\n'.format(cfile.read().replace("{simid}",self.simid))
-        content += '<canvas id="canvas{}" style="border: none;" width="400" height="400"></canvas>'.format(self.simid)
+        content += '<canvas id="canvas{}" style="border: none;" width="{:d}" height="{:d}"></canvas>'.format(self.simid, self.width, self.height)
         content += "<script>"
         content += "var rebContext{} = {{}};\n".format(self.simid);
         content += "startRebContext(rebContext{}, {});\n".format(self.simid,self.simid);

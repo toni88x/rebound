@@ -259,10 +259,10 @@ class Simulation(Structure):
         s +=  "</table>"
         return s
 
-    def gl(self):
+    def gl(self, size=(400,400)):
         if not hasattr(self, "rebgl"):
             from .reboundgl import ReboundGL
-            self.rebgl = ReboundGL(self)
+            self.rebgl = ReboundGL(self, size)
             self.rebgl.update(self)
         return self.rebgl
 
