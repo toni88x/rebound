@@ -1,9 +1,9 @@
-function startRebContext(rebContext, simid) {
+function startRebContext(rebContext, simid, scale) {
 	///////////////////////////
 	// Setup Context
 	rebContext.simid = simid;	
 	rebContext.N = 0;
-	rebContext.scale = 1;
+	rebContext.scale = scale;
 
 	rebContext.mouseDown = false;
 	rebContext.lastMouseX = null;
@@ -75,11 +75,12 @@ function startRebContext(rebContext, simid) {
 	// Open Socket
 	var url = "ws://localhost:8877/reboundsocket";
 	rebContext.socket = new WebSocket(url);
+	rebContext.binaryType = "blob";
 	rebContext.socket.onmessage = function(event) {
-		message = JSON.parse(event.data);
-		rebContext.N = message.N;
-		rebContext.scale = message.scale;
-		fillBuffer(rebContext, message.data);
+		//rebContext.N = message.N;
+		console.log("debug");
+		rebContext.N = 3;
+		fillBuffer(rebContext, event.data);
 		drawScene(rebContext);
 	};
 	rebContext.socket.onopen = function (event){
@@ -101,7 +102,7 @@ function drawScene(rebContext) {
 
 		gl.useProgram(rebContext.shaderProgram);
 		gl.bindBuffer(gl.ARRAY_BUFFER, rebContext.pointsBuffer);
-		gl.vertexAttribPointer(rebContext.shaderProgram.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+		gl.vertexAttribPointer(rebContext.shaderProgram.vertexPositionAttribute, 3, gl.FLOAT, false, 128, 0);
 		gl.drawArrays(gl.POINTS, 0, rebContext.N);
 	}
 }
@@ -158,7 +159,15 @@ function initShaders(rebContext) {
 function fillBuffer(rebContext,data) {
 	var gl = rebContext.gl;
 	gl.bindBuffer(gl.ARRAY_BUFFER, rebContext.pointsBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.DYNAMIC_DRAW);
+	console.log(data.slice(0));
+	
+	var reader = new FileReader();
+	reader.onload = function(e) {
+		gl.bufferData(gl.ARRAY_BUFFER, reader.result, gl.DYNAMIC_DRAW);
+	}
+	reader.readAsArrayBuffer(data);
+
+
 
 	gl.useProgram(rebContext.shaderProgram);
 	mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, rebContext.pMatrix);

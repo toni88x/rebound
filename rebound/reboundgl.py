@@ -1,11 +1,15 @@
 import os
 import rebound
-
+import ctypes
 
 class ReboundGL():
     def __init__(self,sim, size):
+        self.scale = 1.
+        if sim.root_size != -1.:
+            self.scale = 0.20*sim.root_size
         self.simid = "{0:05d}".format(id(sim))
         self.width, self.height = size
+        print ctypes.sizeof(rebound.Particle)
         try:
             self.app = Application()
             self.app.listen(8877)
@@ -29,25 +33,23 @@ class ReboundGL():
         content += '<canvas id="canvas{}" style="border: none;" width="{:d}" height="{:d}"></canvas>'.format(self.simid, self.width, self.height)
         content += "<script>"
         content += "var rebContext{} = {{}};\n".format(self.simid);
-        content += "startRebContext(rebContext{}, {});\n".format(self.simid,self.simid);
+        content += "startRebContext(rebContext{}, {},{:e});\n".format(self.simid,self.simid,self.scale);
         content += "</script>";
         return content
 
     def update(self, sim):
-        scale = 1.
-        if sim.root_size != -1.:
-            scale = 0.20*sim.root_size
         data = []
         for p in sim.particles:
             data.append(p.x)
             data.append(p.y)
             data.append(p.z)
-        msg = {
-            "N": sim.N,
-            "scale": scale,
-            "data": data
-            }
-        ReboundSocketHandler.send_updates(msg, self.simid)
+
+        nb = sim.N * ctypes.sizeof(rebound.Particle)
+        print nb
+        #msg = (ctypes.c_char * (sim.N * ctypes.sizeof(rebound.Particle))).from_buffer(sim._particles.contents)
+        msg = ctypes.cast(sim._particles,ctypes.POINTER(ctypes.c_char * nb))
+        buff2 = (ctypes.c_char * nb).from_address(ctypes.addressof(msg[0]))
+        ReboundSocketHandler.send_updates(buff2.raw, self.simid)
     
 
 import tornado.web
@@ -88,7 +90,7 @@ class ReboundSocketHandler(tornado.websocket.WebSocketHandler):
         cls.lastmsg = msg
         for k,waiter in cls.clients.iteritems():
             if k == simid:
-                waiter.write_message(msg)
+                waiter.write_message(msg,binary=True)
 
     def on_message(self, message):
         if message not in ReboundSocketHandler.clients:
