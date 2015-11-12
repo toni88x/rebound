@@ -9,7 +9,6 @@ class ReboundGL():
             self.scale = 0.20*sim.root_size
         self.simid = "{0:05d}".format(id(sim))
         self.width, self.height = size
-        print ctypes.sizeof(rebound.Particle)
         try:
             self.app = Application()
             self.app.listen(8877)
@@ -38,16 +37,12 @@ class ReboundGL():
         return content
 
     def update(self, sim):
-        data = []
-        for p in sim.particles:
-            data.append(p.x)
-            data.append(p.y)
-            data.append(p.z)
-
-        nb = sim.N * ctypes.sizeof(rebound.Particle)
-        print nb
-        #msg = (ctypes.c_char * (sim.N * ctypes.sizeof(rebound.Particle))).from_buffer(sim._particles.contents)
-        msg = ctypes.cast(sim._particles,ctypes.POINTER(ctypes.c_char * nb))
+        
+        #    . number of particles
+        #            . bytes per float
+        #                . floats per particles
+        nb = sim.N * 4 * 8
+        msg = ctypes.cast(sim.webgl_buffer,ctypes.POINTER(ctypes.c_char * nb))
         buff2 = (ctypes.c_char * nb).from_address(ctypes.addressof(msg[0]))
         ReboundSocketHandler.send_updates(buff2.raw, self.simid)
     
