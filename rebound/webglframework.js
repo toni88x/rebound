@@ -75,7 +75,7 @@ function startRebContext(rebContext, simid, scale) {
 	// Open Socket
 	var url = "ws://localhost:8877/reboundsocket";
 	rebContext.socket = new WebSocket(url);
-	rebContext.binaryType = "blob";
+	rebContext.socket.binaryType = "arraybuffer";
 	rebContext.socket.onmessage = function(event) {
 		fillBuffer(rebContext, event.data);
 	};
@@ -155,14 +155,8 @@ function initShaders(rebContext) {
 function fillBuffer(rebContext,data) {
 	var gl = rebContext.gl;
 	gl.bindBuffer(gl.ARRAY_BUFFER, rebContext.pointsBuffer);
-	var reader = new FileReader();
-	reader.onload = function(e) {
-		gl.bufferData(gl.ARRAY_BUFFER, reader.result, gl.DYNAMIC_DRAW);
-		rebContext.N = reader.result.byteLength/32;
-		drawScene(rebContext);
-	}
-	reader.readAsArrayBuffer(data);
-
+	rebContext.N = data.byteLength/32;
+	gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
 
 
 	gl.useProgram(rebContext.shaderProgram);
@@ -172,4 +166,5 @@ function fillBuffer(rebContext,data) {
 	mat4.scale(rebContext.mvMatrix, [1./rebContext.scale,1./rebContext.scale,1./rebContext.scale]);
 	gl.uniformMatrix4fv(rebContext.shaderProgram.pMatrixUniform, false, rebContext.pMatrix);
 	gl.uniformMatrix4fv(rebContext.shaderProgram.mvMatrixUniform, false, rebContext.mvMatrix);
+	drawScene(rebContext);
 }
