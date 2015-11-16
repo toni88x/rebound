@@ -551,3 +551,7 @@ void reb_prepare_webgl_buffer(struct reb_simulation* r, int* buffer_allocatedN, 
 		(*buffer)[i*webgl_length+7] = particles[i].r;
 	}
 }
+
+void reb_free_webgl_buffer(float** buffer){
+	free(*buffer);
+}

@@ -263,11 +263,7 @@ class Simulation(Structure):
         if not hasattr(self, "rebgl"):
             from .reboundgl import ReboundGL
             self.rebgl = ReboundGL(self, size)
-            clibrebound.reb_prepare_webgl_buffer(byref(self), byref(self.rebgl.buf_allocatedN), byref(self.rebgl.buf))
-            self.rebgl.update(self)
-        else:
-            pass
-            clibrebound.reb_prepare_webgl_buffer(byref(self), byref(self.rebgl.buf_allocatedN), byref(self.rebgl.buf))
+        self.rebgl.update(self)
         return self.rebgl
 
 # Set function pointer for additional forces
@@ -887,7 +883,6 @@ class Simulation(Structure):
             debug.integrate_other_package(tmax,exact_finish_time)
         
         if hasattr(self, "rebgl"):
-            clibrebound.reb_prepare_webgl_buffer(byref(self), byref(self.rebgl.buf_allocatedN), byref(self.rebgl.buf))
             self.rebgl.update(self)
 
     def integrator_synchronize(self):

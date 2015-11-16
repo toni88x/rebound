@@ -734,6 +734,12 @@ struct reb_particle reb_get_com_of_pair(struct reb_particle p1, struct reb_parti
 void reb_prepare_webgl_buffer(struct reb_simulation* r, int* buffer_allocatedN, float** buffer);
 
 /**
+ * @brief Free a WebGL buffer.
+ * @param buffer Buffer to be freed.
+ */
+void reb_free_webgl_buffer(float** buffer);
+
+/**
  * @brief Returns a particle pointer's index in the simulation it's in.
  * @param p A pointer to the particle 
  * @return The integer index of the particle in its simulation (will return -1 if not found in the simulation).

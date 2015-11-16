@@ -1,11 +1,13 @@
 import os
 import rebound
-import ctypes
+from ctypes import byref, cast, POINTER, c_int, c_float, c_char, addressof
+from . import clibrebound
+
 
 class ReboundGL():
     def __init__(self,sim, size):
-        self.buf_allocatedN = ctypes.c_int(0)
-        self.buf = ctypes.POINTER(ctypes.c_float)()
+        self.buf_allocatedN = c_int(0)
+        self.buf = POINTER(c_float)()
         self.buf.values = None
         self.scale = 1.
         if sim.root_size != -1.:
@@ -15,8 +17,12 @@ class ReboundGL():
         try:
             self.app = Application()
             self.app.listen(8877)
+            pass
         except:
             pass
+
+    def __del__(self):
+        clibrebound.reb_free_webgl_buffer(byref(self.buf))
 
     def _repr_html_(self):
         this_dir, this_filename = os.path.split(__file__)
@@ -40,12 +46,16 @@ class ReboundGL():
         return content
 
     def update(self, sim):
+        # Prepare buffer
+        clibrebound.reb_prepare_webgl_buffer(byref(sim), byref(self.buf_allocatedN), byref(self.buf))
+
+        # Send buffer to browser
+        nb = sim.N * 4 * 8
         #    . number of particles
         #            . bytes per float
         #                . floats per particles
-        nb = sim.N * 4 * 8
-        msg = ctypes.cast(self.buf,ctypes.POINTER(ctypes.c_char * nb))
-        buff2 = (ctypes.c_char * nb).from_address(ctypes.addressof(msg[0]))
+        msg = cast(self.buf,POINTER(c_char * nb))
+        buff2 = (c_char * nb).from_address(addressof(msg[0]))
         ReboundSocketHandler.send_updates(buff2.raw, self.simid)
     
 
