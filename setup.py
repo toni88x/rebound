@@ -65,4 +65,7 @@ setup(name='rebound',
     packages=['rebound'],
     install_requires=[],
     ext_modules = [libreboundmodule],
+    data_files = {
+        "": ["rebound/*.js"],
+    },
     zip_safe=False)
