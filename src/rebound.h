@@ -361,8 +361,6 @@ struct reb_simulation {
 	double exit_max_distance;		///< Exit simulation if distance from origin larger than this value 
 	double exit_min_distance;		///< Exit simulation if distance from another particle smaller than this value 
 	double usleep;				///< Wait this number of microseconds after each timestep 
-	float* webgl_buffer;			///< Buffer containing data for WebGL */
-	int    webgl_buffer_allocatedN;		///< Space allocated for WebGL buffer */
 	/** @} */
 
 	/**
@@ -728,10 +726,12 @@ struct reb_particle reb_get_com_of_pair(struct reb_particle p1, struct reb_parti
 /** @} */
 
 /**
- * @brief Prepared the WebGL array buffer. Result will be in r->webgl_buffer.
+ * @brief Prepared the WebGL array buffer. 
  * @param r The rebound simulation to be considered. 
+ * @param buffer_allocatedN Size of buffer (set to 0 to allocate memory initially).
+ * @param buffer Pointer to float buffer.
  */
-void reb_prepare_webgl_buffer(struct reb_simulation* r);
+void reb_prepare_webgl_buffer(struct reb_simulation* r, int* buffer_allocatedN, float** buffer);
 
 /**
  * @brief Returns a particle pointer's index in the simulation it's in.

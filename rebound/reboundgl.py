@@ -4,6 +4,9 @@ import ctypes
 
 class ReboundGL():
     def __init__(self,sim, size):
+        self.buf_allocatedN = ctypes.c_int(0)
+        self.buf = ctypes.POINTER(ctypes.c_float)()
+        self.buf.values = None
         self.scale = 1.
         if sim.root_size != -1.:
             self.scale = 0.20*sim.root_size
@@ -37,12 +40,11 @@ class ReboundGL():
         return content
 
     def update(self, sim):
-        
         #    . number of particles
         #            . bytes per float
         #                . floats per particles
         nb = sim.N * 4 * 8
-        msg = ctypes.cast(sim.webgl_buffer,ctypes.POINTER(ctypes.c_char * nb))
+        msg = ctypes.cast(self.buf,ctypes.POINTER(ctypes.c_char * nb))
         buff2 = (ctypes.c_char * nb).from_address(ctypes.addressof(msg[0]))
         ReboundSocketHandler.send_updates(buff2.raw, self.simid)
     

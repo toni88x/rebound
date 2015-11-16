@@ -178,7 +178,6 @@ void reb_free_simulation(struct reb_simulation* const r){
 
 void reb_free_pointers(struct reb_simulation* const r){
 	reb_tree_delete(r);
-	free(r->webgl_buffer 	);
 	free(r->gravity_cs 	);
 	free(r->collisions	);
 	reb_integrator_wh_reset(r);
@@ -189,8 +188,6 @@ void reb_free_pointers(struct reb_simulation* const r){
 
 void reb_reset_temporary_pointers(struct reb_simulation* const r){
 	// Note: this will not clear the particle array.
-	r->webgl_buffer_allocatedN 	= 0;
-	r->webgl_buffer			= NULL;
 	r->gravity_cs_allocatedN 	= 0;
 	r->gravity_cs 			= NULL;
 	r->collisions_allocatedN	= 0;
@@ -232,26 +229,6 @@ struct reb_simulation* reb_create_simulation(){
 	struct reb_simulation* r = calloc(1,sizeof(struct reb_simulation));
 	reb_init_simulation(r);
 	return r;
-}
-
-void reb_prepare_webgl_buffer(struct reb_simulation* r){
-	const int webgl_length = 8;
-	if (r->webgl_buffer_allocatedN<r->N){
-		r->webgl_buffer = realloc(r->webgl_buffer, sizeof(float)*r->N*webgl_length);
-		r->webgl_buffer_allocatedN = r->N;
-	}
-	const struct reb_particle* const particles = r->particles;
-	const int N = r->N;
-	for (int i=0; i<N; i++){
-		r->webgl_buffer[i*webgl_length+0] = particles[i].x;
-		r->webgl_buffer[i*webgl_length+1] = particles[i].y;
-		r->webgl_buffer[i*webgl_length+2] = particles[i].z;
-		r->webgl_buffer[i*webgl_length+3] = particles[i].vx;
-		r->webgl_buffer[i*webgl_length+4] = particles[i].vy;
-		r->webgl_buffer[i*webgl_length+5] = particles[i].vz;
-		r->webgl_buffer[i*webgl_length+6] = particles[i].m;
-		r->webgl_buffer[i*webgl_length+7] = particles[i].r;
-	}
 }
 
 void reb_init_simulation(struct reb_simulation* r){

@@ -528,3 +528,26 @@ void reb_tools_megno_update(struct reb_simulation* r, double dY){
 					*(r->t-r->megno_mean_t);
 }
 #endif // LIBREBOUNDX
+
+
+
+// WebGL Routines
+void reb_prepare_webgl_buffer(struct reb_simulation* r, int* buffer_allocatedN, float** buffer){
+	const int webgl_length = 8;
+	if (*buffer_allocatedN<r->N){
+		*buffer = realloc(*buffer, sizeof(float)*r->N*webgl_length);
+		*buffer_allocatedN = r->N;
+	}
+	const struct reb_particle* const particles = r->particles;
+	const int N = r->N;
+	for (int i=0; i<N; i++){
+		(*buffer)[i*webgl_length+0] = particles[i].x;
+		(*buffer)[i*webgl_length+1] = particles[i].y;
+		(*buffer)[i*webgl_length+2] = particles[i].z;
+		(*buffer)[i*webgl_length+3] = particles[i].vx;
+		(*buffer)[i*webgl_length+4] = particles[i].vy;
+		(*buffer)[i*webgl_length+5] = particles[i].vz;
+		(*buffer)[i*webgl_length+6] = particles[i].m;
+		(*buffer)[i*webgl_length+7] = particles[i].r;
+	}
+}
