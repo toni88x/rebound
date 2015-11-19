@@ -35,7 +35,7 @@ def getParticle(particle=None, m=None, x=None, y=None, z=None, vx=None, vy=None,
         if date is None: # if no date passed, used cached value
             date = INITDATE
 	datestr1 = date.strftime("%Y-%m-%d %H:%M")
-	datestr2 = date + datetime.timedelta(hours=1)).strftime("%Y-%m-%d %H:%M")
+	datestr2 = (date + datetime.timedelta(hours=1)).strftime("%Y-%m-%d %H:%M")
     print("Searching NASA Horizons for '%s'... "%(particle),end="")
     sys.stdout.flush()
 
