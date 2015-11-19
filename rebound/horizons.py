@@ -19,15 +19,23 @@ __all__ = ["getParticle"]
 INITDATE = None
 
 def getParticle(particle=None, m=None, x=None, y=None, z=None, vx=None, vy=None, vz=None, primary=None, a=None, anom=None, e=None, omega=None, inc=None, Omega=None, MEAN=None, date=None):   
-    if date is not None:
-        date = datetime.datetime.strptime(date,"%Y-%m-%d %H:%M")
-    # set the cached initialization time if it's not set
-    global INITDATE
-    if INITDATE is None:
-        INITDATE = date if date is not None else datetime.datetime.utcnow()
+    datastr = None
+    if isinstance(date, float):
+        # Julian date
+        datestr1 = "JD %7.4f"%date
+        datestr2 = "JD %7.4f"%(date+1.)
+    else:
+        if date is not None:
+            date = datetime.datetime.strptime(date,"%Y-%m-%d %H:%M")
+        # set the cached initialization time if it's not set
+        global INITDATE
+        if INITDATE is None:
+            INITDATE = date if date is not None else datetime.datetime.utcnow()
 
-    if date is None: # if no date passed, used cached value
-        date = INITDATE
+        if date is None: # if no date passed, used cached value
+            date = INITDATE
+	datestr1 = date.strftime("%Y-%m-%d %H:%M")
+	datestr2 = date + datetime.timedelta(hours=1)).strftime("%Y-%m-%d %H:%M")
     print("Searching NASA Horizons for '%s'... "%(particle),end="")
     sys.stdout.flush()
 
@@ -39,8 +47,8 @@ def getParticle(particle=None, m=None, x=None, y=None, z=None, vx=None, vy=None,
                ( b'Observe.*:', 'v\n' ),
                ( b'Coordinate center.*:', '@Sun\n' ),
                ( b'Reference plane.*:', 'eclip\n' ),
-               ( b'Starting.* :', date.strftime("%Y-%m-%d %H:%M")+'\n' ),
-               ( b'Ending.* :', (date + datetime.timedelta(hours=1)).strftime("%Y-%m-%d %H:%M")+'\n' ),
+               ( b'Starting.* :', datestr1+'\n' ),
+               ( b'Ending.* :', datestr2+'\n' ),
                ( b'Output interval.*:', '1d\n' ),
                ( b'Accept default output \[.*:', 'n\n' ),
                ( b'Output reference frame \[.*:', 'J2000\n' ),
