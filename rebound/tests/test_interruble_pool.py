@@ -16,6 +16,7 @@ class TestInterruptiblePool(unittest.TestCase):
         params = [1.,1.1]
         res = pool.map(runsim,params)
     
-        self.assertAlmostEqual(res,[0.9950041652780258,1.095870355119381],delta=1e-15)
+        self.assertAlmostEqual(res[0],0.9950041652780258,delta=1e-15)
+        self.assertAlmostEqual(res[1],1.095870355119381,delta=1e-15)
     
 
