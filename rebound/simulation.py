@@ -924,7 +924,7 @@ class reb_variational_configuration(Structure):
                 ("index_1st_order_a", c_int),
                 ("index_1st_order_b", c_int)]
 
-    def vary(self, particle_index, variation, variation2=None):
+    def vary(self, particle_index, variation, variation2=None,coordinates="heliocentric"):
         order = self.order
         sim = self._sim.contents
         if order==0:
@@ -934,6 +934,23 @@ class reb_variational_configuration(Structure):
         o = sim.particles[particle_index].calculate_orbit(primary=sim.particles[0])
         p = Particle(simulation=sim, primary=sim.particles[0], variation_order=order, variation=variation, variation2=variation2,m=sim.particles[particle_index].m,a=o.a, e=o.e, inc=o.inc, Omega=o.Omega, omega=o.omega, f=o.f)
         sim.particles[self.index + particle_index] = p
+        if coordinates == "jacobi":
+            if self.testparticle>=0:
+                raise ValueError("Cannot use Jacobi coordinates for test particle. ")
+            for i in range(particle_index+1,sim.N_real):
+                com = sim.calculate_com(i)
+                for j in range(0,particle_index+1):
+                    for a in ["x","y","z","vx","vy","vz"]:
+                        if order==1:
+                            setattr(sim.particles[self.index + i], a, getattr(sim.particles[self.index + i],a) +  sim.particles[j].m * getattr(sim.particles[self.index + j],a)/com.m +  sim.particles[self.index + j].m * getattr(sim.particles[j],a)/com.m - sim.particles[j].m * getattr(sim.particles[j],a)/(com.m*com.m) * sim.particles[self.index + j].m)
+                            raise ValueError("1st order mass variation not implemented. ")
+                        elif order==2:
+                            raise ValueError("2nd order not implemented. ")
+
+
+
+
+
     
     @property
     def particles(self):
