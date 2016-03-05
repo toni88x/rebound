@@ -10,6 +10,7 @@
 #include <time.h>
 #include <string.h>
 #include "rebound.h"
+#define MIN(a, b) ((a) > (b) ? (b) : (a))    ///< Returns the minimum of a and b
 
 void heartbeat(struct reb_simulation* r);
 double E0, t_output, t_log_output;
@@ -21,6 +22,7 @@ time_t t_ini;
 int N_prev;
 char* argv4;
 char output_name[100] = {0};
+int warning_message = 0;
 
 //swifter/mercury compare
 void output_to_mercury_swifter(struct reb_simulation* r, double HSR, double tmax, int n_output);
@@ -42,13 +44,14 @@ int main(int argc, char* argv[]){
     int test_dt = 0;
     double tmax;
     if(test_dt){//testing dt
-        tmax = 1000 * 2 * 6.28319;   //1000 orbits of outer planet
-        r->ri_hybarid.switch_ratio = 2;        //units of Hill radii
+        tmax = 1e6 * 6.28319;   //1Million orbits of inner planet
+        r->ri_hybarid.switch_ratio = 6;        //units of Hill radii
         r->dt = atof(argv[1]) * 6.28319;
     } else {//testing HSR
-        tmax = 1e6 * 2 * 6.28319;   //1Myr orbits of outer planet
+        //tmax = 1e5 * 6.28319;   //100,000 orbits of inner planet
+        tmax = 1837 * 6.28319;    //1000 orbits of outer planet
         r->ri_hybarid.switch_ratio = atof(argv[1]);
-        r->dt = 0.01 * 6.28319; //100 dt's per orbital period
+        r->dt = 0.001 * 6.28319; //1000 dt's per orbital period
     }
     
     //collision
@@ -76,6 +79,7 @@ int main(int argc, char* argv[]){
     //planet 1
     {
         double a=1, m=5e-5, e=0, inc = reb_random_normal(0.00001);
+        //double a=1, m=5e-4, e=0, inc = reb_random_normal(0.00001);
         struct reb_particle p1 = {0};
         p1 = reb_tools_orbit_to_particle(r->G, star, m, a, e, inc, 0, 0, 0);
         p1.r = 1.6e-4;              //radius of particle is in AU!
@@ -86,6 +90,7 @@ int main(int argc, char* argv[]){
     //planet 2
     {
         double a=1.5, m=5e-5, e=0.01, inc=reb_random_normal(0.00001);
+        //double a=1.3, m=5e-4, e=0, inc = reb_random_normal(0.00001);
         struct reb_particle p2 = {0};
         p2 = reb_tools_orbit_to_particle(r->G, star, m, a, e, inc, 0, 0, 0);
         p2.r = 1.6e-4;
@@ -112,6 +117,27 @@ int main(int argc, char* argv[]){
         pt.id = r->N;
 		reb_add(r, pt);
     }
+    
+    /*
+    r->usleep = 5000;
+    {//orbiting around body 1 satellite
+        double x=0.01;
+        struct reb_particle pt = {0};
+        pt = reb_tools_orbit_to_particle(r->G, r->particles[1], planetesimal_mass, x, 0, 0, 0, 0, 0.1);    //works well with m2=5e-4
+        pt.y += r->particles[1].y;
+        pt.r = 4e-5;            //I think radius of particle is in AU!
+        pt.id = r->N;              //1 = planet
+        reb_add(r, pt);
+    }
+    
+    {//planetesimal
+        struct reb_particle pt = {0};
+        pt = reb_tools_orbit_to_particle(r->G, star, planetesimal_mass, 1.08*r->particles[1].x, 0, 0, 0, 0, 0);
+        pt.r = 4e-5;
+        pt.id = r->N;
+        reb_add(r, pt);
+    }
+    */
     
     //energy
     E0 = reb_tools_energy(r);
@@ -152,9 +178,12 @@ void heartbeat(struct reb_simulation* r){
         struct tm *tmp2 = gmtime(&t_curr);
         double time = t_curr - t_ini;
         
+        int N_mini = 0;
+        if(r->ri_hybarid.mini_active) N_mini = r->ri_hybarid.mini->N;
+        
         FILE *append;
         append = fopen(output_name, "a");
-        fprintf(append, "%.16f,%.16f,%d,%d,%.1f\n",r->t,dE,r->N,r->ri_hybarid.mini->N,time);
+        fprintf(append, "%.16f,%.16f,%d,%d,%.1f\n",r->t,dE,r->N,N_mini,time);
         fclose(append);
     }
     
@@ -166,6 +195,56 @@ void heartbeat(struct reb_simulation* r){
         fclose(append);
         
         N_prev = r->N;
+    }
+    
+    if(warning_message == 0 && r->t > r->dt){
+        //record max velocity
+        struct reb_particle* particles = r->particles;
+        double min_dt_enc2 = INFINITY;
+        double switch_ratio2 = r->ri_hybarid.switch_ratio*r->ri_hybarid.switch_ratio;
+        struct reb_particle p0 = particles[0];
+        for(int i=1;i<r->N_active;i++){
+            struct reb_particle pi = particles[i];
+            const double dxi = p0.x - pi.x;
+            const double dyi = p0.y - pi.y;
+            const double dzi = p0.z - pi.z;
+            const double r0i2 = dxi*dxi + dyi*dyi + dzi*dzi;
+            const double mi = pi.m/(p0.m*3.);
+            double rhi = pow(mi*mi*r0i2*r0i2*r0i2,1./6.);
+            for(int j=i+1;j<r->N;j++){
+                struct reb_particle pj = particles[j];
+                
+                const double dxj = p0.x - pj.x;
+                const double dyj = p0.y - pj.y;
+                const double dzj = p0.z - pj.z;
+                const double r0j2 = dxj*dxj + dyj*dyj + dzj*dzj;
+                const double mj = pj.m/(p0.m*3.);
+                double rhj = pow(mj*mj*r0j2*r0j2*r0j2,1./6.);
+                const double rh_sum = rhi+rhj;
+                const double rh_sum2 = rh_sum*rh_sum;
+                
+                const double dx = pi.x - pj.x;
+                const double dy = pi.y - pj.y;
+                const double dz = pi.z - pj.z;
+                const double rij2 = dx*dx + dy*dy + dz*dz;
+                if(rij2 < switch_ratio2*rh_sum2){
+                    const double dvx = pi.vx - pj.vx;
+                    const double dvy = pi.vy - pj.vy;
+                    const double dvz = pi.vz - pj.vz;
+                    const double vij2 = dvx*dvx + dvy*dvy + dvz*dvz;
+                    const double dt_enc2 = switch_ratio2*rh_sum2/vij2;
+                    min_dt_enc2 = MIN(min_dt_enc2,dt_enc2);
+                    if (warning_message==0 && min_dt_enc2 < 16.*r->dt*r->dt){
+                        warning_message = 1;
+                        char warning[200] = {0}; strcat(warning,argv4); strcat(warning,"_warning"); strcat(warning,".txt");
+                        FILE* append = fopen(warning,"a");
+                        fprintf(append,"The timestep is likely too large. Close encounters might be missed. Decrease the timestep or increase the switching radius. This warning will appear only once.\n");
+                        fprintf(append,"t=%f: min_dt_enc=%f < 4*dt=%f\n",r->t,sqrt(min_dt_enc2),4*r->dt);
+                        fclose(append);
+                    }
+                }
+            }
+        }
     }
     
     //ejections
