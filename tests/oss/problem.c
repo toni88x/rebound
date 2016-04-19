@@ -1,8 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <math.h>
-#include "rebound.h"
 #include "../minunit.h"
 
 double ss_pos[6][3] =
@@ -31,28 +26,17 @@ double ss_mass[6] =
      1. / 3501.6,   // Saturn
      1. / 22869.,   // Uranus
      1. / 19314.,   // Neptune
-     7.4074074e-09  // Pluto
+     0.0  // Pluto
 };
 
-double tmax = 7.3e5;
 
-int tests_run = 0;
-
-
-static char * test_oss(){
+struct reb_simulation* setup_sim(){
 	struct reb_simulation* r = reb_create_simulation();
 	// Setup constants
 	const double k = 0.01720209895; // Gaussian constant
 	r->dt = 40;			// in days
 	r->G = k * k;			// These are the same units as used by the mercury6 code.
-	r->ri_whfast.safe_mode = 0;     // Turn of safe mode. Need to call integrator_synchronize() before outputs.
-	r->ri_whfast.corrector = 11;    // Turn on symplectic correctors (11th order).
-
-	// Setup callbacks:
 	r->force_is_velocity_dependent = 0; // Force only depends on positions.
-	r->integrator = REB_INTEGRATOR_WHFAST;
-	//r->integrator	= REB_INTEGRATOR_IAS15;
-	//r->integrator	= REB_INTEGRATOR_WH;
 
 	// Initial conditions
 	for (int i = 0; i < 6; i++) {
@@ -66,55 +50,50 @@ static char * test_oss(){
 		p.m = ss_mass[i];
 		reb_add(r, p);
 	}
-	if (r->integrator == REB_INTEGRATOR_WH) {
-		struct reb_particle* const particles = r->particles;
-		// Move to heliocentric frame (required by WH integrator)
-		for (int i = 1; i < r->N; i++) {
-			particles[i].x -= particles[0].x;
-			particles[i].y -= particles[0].y;
-			particles[i].z -= particles[0].z;
-			particles[i].vx -= particles[0].vx;
-			particles[i].vy -= particles[0].vy;
-			particles[i].vz -= particles[0].vz;
-		}
-		particles[0].x = 0;
-		particles[0].y = 0;
-		particles[0].z = 0;
-		particles[0].vx = 0;
-		particles[0].vy = 0;
-		particles[0].vz = 0;
-	} else {
-		reb_move_to_com(r);
-	}
+    reb_move_to_com(r);
 
 	r->N_active = r->N - 1; // Pluto is treated as a test-particle.
+    return r;
+}
 
+
+static char * test_oss_whfast(){
+    struct reb_simulation* r = setup_sim();
+	r->integrator = REB_INTEGRATOR_WHFAST;
 	double e_initial = reb_tools_energy(r);
-
-	reb_integrate(r, tmax);
-
+	reb_integrate(r, 7.3e5);
 	double e_final = reb_tools_energy(r);
-    
-    // Relative energy error: 
-    double e_err = fabs((e_final - e_initial) / e_initial);
-    mu_assert_almost_equal("Energy error too large.",e_err,0.,1e-8);
+    mu_assert_almost_equal("OSS: WHFast energy error too large.",(e_final - e_initial)/e_initial,0.,1e-7);
+    return 0;
+}
+
+static char * test_oss_whfast_cor(){
+    struct reb_simulation* r = setup_sim();
+	r->integrator = REB_INTEGRATOR_WHFAST;
+	r->ri_whfast.safe_mode = 0;     // Turn of safe mode. Need to call integrator_synchronize() before outputs.
+	r->ri_whfast.corrector = 11;    // Turn on symplectic correctors (11th order).
+	double e_initial = reb_tools_energy(r);
+	reb_integrate(r, 7.3e5);
+	double e_final = reb_tools_energy(r);
+    mu_assert_almost_equal("OSS: WHFast with correctors energy error too large.",(e_final - e_initial)/e_initial,0.,1e-10);
+    return 0;
+}
+
+static char * test_oss_ias15(){
+    struct reb_simulation* r = setup_sim();
+	r->integrator	= REB_INTEGRATOR_IAS15;
+	double e_initial = reb_tools_energy(r);
+	reb_integrate(r, 7.3e5);
+	double e_final = reb_tools_energy(r);
+    mu_assert_almost_equal("OSS: IAS15 energy error too large.",(e_final - e_initial)/e_initial,0.,1e-15);
     return 0;
 }
 
 static char * all_tests() {
-    mu_run_test(test_oss);
+    mu_run_test(test_oss_whfast);
+    mu_run_test(test_oss_whfast_cor);
+    mu_run_test(test_oss_ias15);
     return 0;
 }
 
-int main(int argc, char* argv[]) {
-    char *result = all_tests();
-    if (result !=0) {
-        printf("%s\n", result);
-    }else{
-        printf("ALL TESTS PASSED\n");
-    }
-    printf("Tests run: %d\n", tests_run);
-
-    return result != 0;
-}
-
+MU_RUN_ALL();

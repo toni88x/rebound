@@ -20,3 +20,6 @@ clean:
 	$(MAKE) -C ../../src/ clean
 	@echo "Cleaning up local directory ..."
 	@-rm -vf rebound
+	@echo "Removing coverage files ..."
+	@-rm -f *.gcda
+	@-rm -f *.gcno
