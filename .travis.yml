@@ -3,12 +3,12 @@ sudo: false
 
 
 env:
-  - #TESTPART=C
+  #- TESTPART=C
   - TESTPART=CUNITTESTS1
   - TESTPART=CUNITTESTS2
-  - #TESTPART=PYTHON
-  - #TESTPART=IPYTHON1
-  - #TESTPART=IPYTHON2
+  #- TESTPART=PYTHON
+  #- TESTPART=IPYTHON1
+  #- TESTPART=IPYTHON2
 
 python:
   - "2.7"
@@ -96,4 +96,4 @@ script:
 after_success:
     - if [[ $TESTPART == "PYTHON" ]]; then coveralls; fi
     - if [[ $TESTPART == "CUNITTESTS1" ]]; then coveralls -i src/; fi
-    - if [[ $TESTPART == "CUNITTESTS2" ]]; then coveralls -i src/ --gcov-options "-o build/temp.linux-x86_64-2.7/src"; fi
+    - if [[ $TESTPART == "CUNITTESTS2" ]]; then coveralls -i src/ --gcov-options "-o build/temp.linux-x86_64-2.7/src/"; fi
