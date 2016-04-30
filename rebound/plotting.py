@@ -3,7 +3,7 @@ import math
 from .particle import Particle
 
 
-def OrbitPlot(sim, projection='', figsize=(5,5), lim=None, Narc=100, unitlabel=None, color=False, periastron=False, trails=False, lw=1.):
+def OrbitPlot(sim, projection='', figsize=(5,5), lim=None, Narc=100, unitlabel=None, color=False, color_map='jet', periastron=False, trails=False, lw=1.):
         """
         Convenience function for plotting instantaneous orbits.
 
@@ -96,7 +96,7 @@ def OrbitPlot(sim, projection='', figsize=(5,5), lim=None, Narc=100, unitlabel=N
             ax.set_zlabel("z" + unitlabel)
 
         if color:
-            cm = plt.get_cmap("jet")
+            cm = plt.get_cmap(color_map)
         else:
             cmf = plt.get_cmap("Greys")
             cm = lambda x: cmf(x / 2. + 0.5)
@@ -109,11 +109,12 @@ def OrbitPlot(sim, projection='', figsize=(5,5), lim=None, Narc=100, unitlabel=N
         for i, o in enumerate(orbits):
             primary = sim.calculate_com(i + 1)
             colori = cm(float(i + 1) / float(sim.N - 1))
+            color = (colori[0], colori[1], colori[2], 1)
             pp = Particle(a=o.a, f=o.f, inc=o.inc, omega=o.omega, Omega=o.Omega, e=o.e, m=particles[i + 1].m, primary=primary, simulation=sim)
             if projection == '3d':
-                ax.scatter(pp.x, pp.y, pp.z, s=25 * lw, facecolor="black", edgecolor=None, zorder=3)
+                ax.scatter(pp.x, pp.y, pp.z, s=25 * lw, facecolor=color, edgecolor=color, zorder=3)
             else:
-                ax.scatter(pp.x, pp.y, s=25 * lw, facecolor="black", edgecolor=None, zorder=3)
+                ax.scatter(pp.x, pp.y, s=25 * lw, facecolor=color, edgecolor=color, zorder=3)
             if o.a > 0.:  # bound orbit
                 phase = np.linspace(0, 2. * np.pi, Narc)
                 for ph in phase:
