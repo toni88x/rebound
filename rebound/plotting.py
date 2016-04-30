@@ -84,9 +84,16 @@ def OrbitPlot(sim, projection='', figsize=(5,5), lim=None, Narc=100, unitlabel=N
         if unitlabel is not None:
             unitlabel = " " + unitlabel
         else:
-            unitlabel = ""
+            length_unit = sim.units['length']
+            if not length_unit:
+                unitlabel = " [AU]"  # Default length unit. TODO: get that from sim object.
+            else:
+                unitlabel = " [%s]" % length_unit
         ax.set_xlabel("x" + unitlabel)
         ax.set_ylabel("y" + unitlabel)
+        if projection == '3d':
+            # Add z-axis label if projection is '3d'.
+            ax.set_zlabel("z" + unitlabel)
 
         if color:
             cm = plt.get_cmap("jet")
