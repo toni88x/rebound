@@ -3,7 +3,8 @@ import math
 from .particle import Particle
 
 
-def OrbitPlot(sim, projection='', figsize=(5,5), lim=None, Narc=100, unitlabel=None, color=False, color_map='jet', periastron=False, trails=False, lw=1.):
+def OrbitPlot(sim, projection='', figsize=(5, 5), lim=None, Narc=100, unitlabel=None, color=False, colormap='jet',
+              particle_colors=None, periastron=False, trails=False, lw=1.):
         """
         Convenience function for plotting instantaneous orbits.
 
@@ -20,6 +21,10 @@ def OrbitPlot(sim, projection='', figsize=(5,5), lim=None, Narc=100, unitlabel=N
             String describing the units, shown on axis labels (default: None)
         color           : bool, optional            
             Enable color (default: False)
+        colormap        : string, optional
+            Select matplotlib colormap, see http://matplotlib.org/users/colormaps.html (default: 'jet')
+        particle_colors : tuple or list, optional
+            Custom colors for particles.
         periastron  : bool, optional            
             Draw a marker at periastron (default: False)
         trails          : bool, optional            
@@ -45,16 +50,22 @@ def OrbitPlot(sim, projection='', figsize=(5,5), lim=None, Narc=100, unitlabel=N
 
         """
         try:
-            import matplotlib.pyplot as plt
-            from matplotlib.patches import Circle, PathPatch
-            from mpl_toolkits.mplot3d import Axes3D, art3d
             import numpy as np
+            import matplotlib.pyplot as plt
+            from matplotlib.colors import ColorConverter
+            from mpl_toolkits.mplot3d import Axes3D
         except:
             raise ImportError(
                 "Error importing matplotlib and/or numpy. "
                 "Plotting functions not available. "
                 "If running from within a jupyter notebook, try calling '%matplotlib inline' beforehand."
             )
+
+        # Check if particle colors is iterable.
+        if type(particle_colors) != list and type(particle_colors) != tuple:
+            raise TypeError("particle_colors needs to be of type 'list' or 'tuple'.")
+        elif not particle_colors:
+            particle_colors = []  # Init list to avoid problems with len().
 
         fig = plt.figure(figsize=figsize)
         if projection == '3d':
@@ -96,7 +107,7 @@ def OrbitPlot(sim, projection='', figsize=(5,5), lim=None, Narc=100, unitlabel=N
             ax.set_zlabel("z" + unitlabel)
 
         if color:
-            cm = plt.get_cmap(color_map)
+            cm = plt.get_cmap(colormap)
         else:
             cmf = plt.get_cmap("Greys")
             cm = lambda x: cmf(x / 2. + 0.5)
@@ -108,7 +119,11 @@ def OrbitPlot(sim, projection='', figsize=(5,5), lim=None, Narc=100, unitlabel=N
 
         for i, o in enumerate(orbits):
             primary = sim.calculate_com(i + 1)
-            colori = cm(float(i + 1) / float(sim.N - 1))
+            if particle_colors:
+                cc = ColorConverter()
+                colori = cc.to_rgb(particle_colors[i % len(particle_colors)])
+            else:
+                colori = cm(float(i + 1) / float(sim.N - 1))
             color = (colori[0], colori[1], colori[2], 1)
             pp = Particle(a=o.a, f=o.f, inc=o.inc, omega=o.omega, Omega=o.Omega, e=o.e, m=particles[i + 1].m, primary=primary, simulation=sim)
             if projection == '3d':
